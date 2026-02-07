@@ -22,14 +22,21 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useActionToast } from './use-action-toast'
 
 export function CreateAccountDialog() {
   const [open, setOpen] = useState(false)
+  const { handleActionResult } = useActionToast()
 
   // Función wrapper para cerrar el modal después de guardar
   async function handleSubmit(formData: FormData) {
-      await createAccount(formData)
-      setOpen(false) // Cierra el modal
+      const result = await createAccount(formData)
+      if (result) {
+        handleActionResult(result, 'Cuenta creada exitosamente')
+        if (result.success) {
+          setOpen(false) // Cierra el modal
+        }
+      }
   }
 
   return (

@@ -32,10 +32,39 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useActionToast } from './use-action-toast'
 
-export function AccountActions({ account }: { account: any }){
+interface Account {
+  id: number
+  name: string
+  currency: string
+  isCredit: boolean | null
+}
+
+export function AccountActions({ account }: { account: Account }){
     const [showEditDialog, setShowEditDialog] = useState(false)
     const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+    const { handleActionResult } = useActionToast()
+
+    async function handleEdit(formData: FormData) {
+        const result = await updateAccount(account.id, formData)
+        if (result) {
+            handleActionResult(result, 'Cuenta actualizada exitosamente')
+            if (result.success) {
+                setShowEditDialog(false)
+            }
+        }
+    }
+
+    async function handleDelete() {
+        const result = await deleteAccount(account.id)
+        if (result) {
+            handleActionResult(result, 'Cuenta eliminada exitosamente')
+            if (result.success) {
+                setShowDeleteAlert(false)
+            }
+        }
+    }
 
     return (
         <>
@@ -64,10 +93,7 @@ export function AccountActions({ account }: { account: any }){
                     <DialogHeader>
                         <DialogTitle>Editar Cuenta</DialogTitle>
                     </DialogHeader>
-                    <form action={async (formData) => {
-                        await updateAccount(account.id, formData)
-                        setShowEditDialog(false)
-                    }} className="grid gap-4 py-4">
+                    <form action={handleEdit} className="grid gap-4 py-4">
                         <div className="grid gap-2">
                             <Label>Nombre</Label>
                             <Input name="name" defaultValue={account.name} required />
@@ -87,7 +113,7 @@ export function AccountActions({ account }: { account: any }){
                         </div>
 
                         <div className="flex items-center space-x-2">
-                            <Checkbox id="isCredit" name="isCredit" defaultChecked={account.isCredit} />
+                            <Checkbox id="isCredit" name="isCredit" defaultChecked={account.isCredit || false} />
                             <Label htmlFor="isCredit" className="text-sm font-normal">
                                 ¿Es tarjeta de crédito?
                             </Label>
@@ -113,7 +139,7 @@ export function AccountActions({ account }: { account: any }){
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction 
-                            onClick={async () => await deleteAccount(account.id)}
+                            onClick={handleDelete}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
                             Sí, eliminar cuenta

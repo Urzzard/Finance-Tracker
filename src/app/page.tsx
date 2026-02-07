@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "../components/mod-toggle";
 import { CreateAccountDialog } from "../components/create-account-dialog";
+import { CreateTransactionDialog } from "../components/create-transaction-dialog";
+import { TransactionList } from "../components/transaction-list";
 import { db } from "../db";
-import { Trash2 } from "lucide-react";
-import { deleteAccount } from "./actions";
+import { getTransactions, getCategories, getAccountBalances } from "./actions";
 import { AccountActions } from "../components/account-actions";
 
 export default async function Dashboard() {
@@ -25,6 +26,11 @@ export default async function Dashboard() {
     where: (accounts, { eq }) => eq(accounts.userId, user.id),
     orderBy: (accounts, { desc }) => [desc(accounts.createdAt)],
   });
+
+  // Obtenemos las transacciones, categorías y balances
+  const userTransactions = await getTransactions();
+  const userCategories = await getCategories();
+  const accountBalances = await getAccountBalances();
 
   // 3. Si hay usuario, mostramos el Dashboard básico
   return (
@@ -92,8 +98,17 @@ export default async function Dashboard() {
                               Moneda: {account.currency}
                           </p>
                           <div className="text-2xl font-bold">
-                              {/* Por ahora hardcodeamos el saldo en 0 hasta que hagamos transacciones */}
-                              S/ 0.00
+                              {(() => {
+                                const balance = accountBalances[account.id]
+                                if (balance) {
+                                  const prefix = balance.currency === 'USD' ? '$' : 'S/'
+                                  const formattedBalance = Math.abs(balance.net / 100).toFixed(2)
+                                  const sign = balance.net >= 0 ? '' : '-'
+                                  return `${prefix} ${sign}${formattedBalance}`
+                                }
+                                const prefix = account.currency === 'USD' ? '$' : 'S/'
+                                return `${prefix} 0.00`
+                              })()}
                           </div>
                       </div>
                   ))
@@ -103,9 +118,21 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      
-
-
+      {/* SECCIÓN DE TRANSACCIONES */}
+      <div className="mt-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Transacciones</h2>
+          <CreateTransactionDialog 
+            accounts={userAccounts} 
+            categories={userCategories} 
+          />
+        </div>
+        <TransactionList 
+          transactions={userTransactions} 
+          accounts={userAccounts}
+          categories={userCategories}
+        />
+      </div>
 
     </div>
   );

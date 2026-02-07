@@ -79,7 +79,7 @@ const config = {
       },
     },
   },
-  // 4. Importamos el plugin de animaciones de Shadcn
+  // 4. Importamos el plugin de animaciones de Shadcn  
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
 
