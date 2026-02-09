@@ -8,6 +8,7 @@ import { TransactionList } from "../components/transaction-list";
 import { db } from "../db";
 import { getTransactions, getCategories, getAccountBalances } from "./actions";
 import { AccountActions } from "../components/account-actions";
+import { LogoutButton } from "../components/logout-button";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -45,9 +46,7 @@ export default async function Dashboard() {
             {/* AQUI ESTÁ EL BOTÓN DE TEMA */}
             <ModeToggle />
             
-            <form action="/auth/signout" method="post">
-               <Button variant="destructive">Cerrar Sesión</Button>
-            </form>
+            <LogoutButton />
         </div>
       </div>
 

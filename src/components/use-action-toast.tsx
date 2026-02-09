@@ -13,5 +13,9 @@ export function useActionToast() {
     }
   }
 
-  return { handleActionResult, showToast }
+  const showToastCustom = (message: string, type: 'success' | 'error' | 'info', duration?: number) => {
+    showToast(message, type, duration)
+  }
+
+  return { handleActionResult, showToast: showToastCustom }
 }
