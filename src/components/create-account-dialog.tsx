@@ -44,7 +44,7 @@ export function CreateAccountDialog() {
       <DialogTrigger asChild>
         <Button>+ Nueva Cuenta</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <DialogTitle>Crear Cuenta</DialogTitle>
           <DialogDescription>

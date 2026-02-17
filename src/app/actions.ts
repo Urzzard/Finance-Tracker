@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../utils/supabase/server'
+import { cache } from 'react'
 import { db } from '../db'
 import { eq, and, desc } from 'drizzle-orm'
-import { accounts, transactions, categories, transactionTypeEnum } from '../db/schema'
+import { accounts, transactions, categories } from '../db/schema'
 
 export async function createAccount(formData: FormData) {
   const supabase = await createClient()
@@ -103,7 +104,7 @@ export async function createTransaction(formData: FormData) {
   }
 }
 
-export async function getTransactions() {
+export const getTransactions = cache(async () => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
@@ -122,7 +123,7 @@ export async function getTransactions() {
     console.error('Error obteniendo transacciones:', error)
     return []
   }
-}
+})
 
 export async function updateTransaction(id: number, formData: FormData) {
   const supabase = await createClient()
@@ -171,7 +172,7 @@ export async function deleteTransaction(id: number) {
 
 // === CATEGORIES ACTIONS ===
 
-export async function getCategories() {
+export const getCategories = cache(async () => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
@@ -186,7 +187,7 @@ export async function getCategories() {
     console.error('Error obteniendo categorías:', error)
     return []
   }
-}
+})
 
 export async function createCategory(formData: FormData) {
   const supabase = await createClient()
@@ -211,7 +212,7 @@ export async function createCategory(formData: FormData) {
 
 // === BALANCE FUNCTIONS ===
 
-export async function getAccountBalances() {
+export const getAccountBalances = cache(async () => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return {}
@@ -251,4 +252,4 @@ export async function getAccountBalances() {
     console.error('Error obteniendo balances:', error)
     return {}
   }
-}
+})

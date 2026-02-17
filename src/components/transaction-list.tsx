@@ -1,16 +1,8 @@
 'use client'
 
 import { ArrowUpDown, ArrowUpIcon, ArrowDownIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { TransactionActions } from "./transaction-actions"
+import { CreateTransactionDialog } from "./create-transaction-dialog"
 
 interface Transaction {
   id: number
@@ -52,8 +44,11 @@ interface TransactionListProps {
 
 export function TransactionList({ transactions, accounts, categories }: TransactionListProps) {
   const formatAmount = (amount: number, currency: string) => {
-    const formattedAmount = (amount / 100).toFixed(2)
     const prefix = currency === 'USD' ? '$' : 'S/'
+    const formattedAmount = Math.abs(amount / 100).toLocaleString('es-PE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
     return `${prefix} ${formattedAmount}`
   }
 
@@ -68,112 +63,171 @@ export function TransactionList({ transactions, accounts, categories }: Transact
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case 'income':
-        return <ArrowUpIcon className="w-4 h-4 text-green-600" />
+        return <ArrowUpIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
       case 'expense':
-        return <ArrowDownIcon className="w-4 h-4 text-red-600" />
+        return <ArrowDownIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
       default:
-        return <ArrowUpDown className="w-4 h-4 text-gray-600" />
+        return <ArrowUpDown className="w-4 h-4 text-slate-500" />
     }
   }
 
-  const getTransactionBadgeColor = (type: string) => {
-    switch (type) {
-      case 'income':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      case 'expense':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    }
-  }
+  const incomeTransactions = transactions.filter(t => t.type === 'income')
+  const expenseTransactions = transactions.filter(t => t.type === 'expense')
+  const transferTransactions = transactions.filter(t => t.type === 'transfer')
+
+  const renderTransaction = (transaction: Transaction) => (
+    <div
+      key={transaction.id}
+      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+          transaction.type === 'income' ? 'bg-emerald-100 dark:bg-emerald-900/30' :
+          transaction.type === 'expense' ? 'bg-red-100 dark:bg-red-900/30' :
+          'bg-slate-200 dark:bg-slate-700'
+        }`}>
+          {getTransactionIcon(transaction.type)}
+        </div>
+        
+        <div className="space-y-0.5">
+          <p className="font-medium text-sm text-slate-900 dark:text-slate-50">
+            {transaction.description || 'Sin descripción'}
+          </p>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <span>{transaction.account.name}</span>
+            {transaction.category && (
+              <>
+              <span>•</span>
+              <span>{transaction.category?.icon} {transaction.category?.name}</span>
+              </>
+            )}
+            <span>•</span>
+            <span>{formatDate(transaction.date)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="text-right">
+          <p className={`font-semibold text-sm ${
+            transaction.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 
+            transaction.type === 'expense' ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'
+          }`}>
+            {transaction.type === 'expense' ? '-' : '+'}
+            {formatAmount(transaction.amount, transaction.account.currency)}
+          </p>
+        </div>
+
+        <TransactionActions 
+          transaction={transaction}
+          accounts={accounts}
+          categories={categories}
+        />
+      </div>
+    </div>
+  )
+
+  const renderEmptyState = () => (
+    <div className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/30">
+      <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-xl mx-auto mb-3 flex items-center justify-center">
+        <span className="text-xl">💸</span>
+      </div>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Sin transacciones registradas</p>
+      <p className="text-xs text-slate-400 dark:text-slate-500">Comienza registrando tu primera transacción</p>
+    </div>
+  )
+
+  const renderColumn = (title: string, transactionsList: Transaction[], color: string, icon: React.ReactNode) => (
+    <div className="flex-1">
+      <div className="flex items-center gap-2 mb-4">
+        {icon}
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
+        <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+          {transactionsList.length}
+        </span>
+      </div>
+      {transactionsList.length === 0 ? (
+        <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/30">
+          <p className="text-xs text-slate-400 dark:text-slate-500">Sin {title.toLowerCase()}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {transactionsList.map(renderTransaction)}
+        </div>
+      )}
+    </div>
+  )
 
   if (transactions.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Transacciones</CardTitle>
-          <CardDescription>No tienes transacciones registradas</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 border-2 border-dashed rounded-lg border-muted-foreground/25">
-            <p className="text-muted-foreground mb-4">Comienza registrando tu primera transacción</p>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-slate-600 dark:bg-slate-400 rounded-full"></div>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Transacciones</h2>
           </div>
-        </CardContent>
-      </Card>
+          <CreateTransactionDialog 
+            accounts={accounts} 
+            categories={categories} 
+          />
+        </div>
+        {renderEmptyState()}
+      </div>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Transacciones
-          <span className="text-sm font-normal text-muted-foreground">
-            {transactions.length} transacciones
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-6 bg-slate-600 dark:bg-slate-400 rounded-full"></div>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Transacciones</h2>
+          <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+            {transactions.length}
           </span>
-        </CardTitle>
-        <CardDescription>Tus ingresos y gastos más recientes</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {transactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              {/* Left side - Icon and info */}
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                  {getTransactionIcon(transaction.type)}
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="font-medium leading-none">
-                    {transaction.description || 'Sin descripción'}
-                  </p>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <span>{transaction.account.name}</span>
-                    {transaction.category && (
-                      <>
-                    <span>•</span>
-                    <span>{transaction.category?.icon} {transaction.category?.name}</span>
-                      </>
-                    )}
-                    <span>•</span>
-                    <span>{formatDate(transaction.date)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right side - Amount and actions */}
-              <div className="flex items-center space-x-3">
-                <div className="text-right">
-                  <p className={`font-semibold ${
-                    transaction.type === 'income' ? 'text-green-600' : 
-                    transaction.type === 'expense' ? 'text-red-600' : 'text-gray-600'
-                  }`}>
-                    {transaction.type === 'expense' ? '-' : '+'}
-                    {formatAmount(transaction.amount, transaction.account.currency)}
-                  </p>
-                  <Badge 
-                    variant="secondary" 
-                    className={getTransactionBadgeColor(transaction.type)}
-                  >
-                    {transaction.type === 'income' ? 'Ingreso' : 
-                     transaction.type === 'expense' ? 'Gasto' : 'Transferencia'}
-                  </Badge>
-                </div>
-
-                <TransactionActions 
-                  transaction={transaction}
-                  accounts={accounts}
-                  categories={categories}
-                />
-              </div>
-            </div>
-          ))}
         </div>
-      </CardContent>
-    </Card>
+        <CreateTransactionDialog 
+          accounts={accounts} 
+          categories={categories} 
+        />
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {renderColumn(
+          'Ingresos', 
+          incomeTransactions, 
+          'emerald',
+          <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <ArrowUpIcon className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+          </div>
+        )}
+        <div className="hidden lg:block w-px bg-slate-200 dark:bg-slate-700"></div>
+        {renderColumn(
+          'Gastos', 
+          expenseTransactions, 
+          'red',
+          <div className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <ArrowDownIcon className="w-3 h-3 text-red-600 dark:text-red-400" />
+          </div>
+        )}
+      </div>
+
+      {transferTransactions.length > 0 && (
+        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+              <ArrowUpDown className="w-3 h-3 text-slate-600 dark:text-slate-300" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Transferencias</h3>
+            <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+              {transferTransactions.length}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {transferTransactions.map(renderTransaction)}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
