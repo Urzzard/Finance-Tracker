@@ -47,6 +47,13 @@ export function CreateTransactionDialog({ accounts, categories }: CreateTransact
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense')
   const { handleActionResult } = useActionToast()
 
+  const getLocalDateTime = () => {
+    const now = new Date()
+    const offset = now.getTimezoneOffset() * 60000
+    const localDate = new Date(now.getTime() - offset)
+    return localDate.toISOString().slice(0, 16)
+  }
+
   async function handleSubmit(formData: FormData) {
     const result = await createTransaction(formData)
     handleActionResult(result, 'Transacción creada exitosamente')
@@ -159,8 +166,8 @@ export function CreateTransactionDialog({ accounts, categories }: CreateTransact
             <Input 
               id="date" 
               name="date" 
-              type="date" 
-              defaultValue={new Date().toISOString().split('T')[0]}
+              type="datetime-local" 
+              defaultValue={getLocalDateTime()}
               required 
             />
           </div>

@@ -91,3 +91,5 @@ next-env.d.ts
 
 #agentes
 .agents
+
+/docs

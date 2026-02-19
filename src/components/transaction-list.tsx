@@ -56,7 +56,9 @@ export function TransactionList({ transactions, accounts, categories }: Transact
     return new Intl.DateTimeFormat('es-PE', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     }).format(new Date(date))
   }
 
@@ -78,10 +80,10 @@ export function TransactionList({ transactions, accounts, categories }: Transact
   const renderTransaction = (transaction: Transaction) => (
     <div
       key={transaction.id}
-      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+      className="relative flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors gap-2 sm:gap-3"
     >
-      <div className="flex items-center gap-3">
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+      <div className="flex items-start gap-3 pr-8 sm:pr-0">
+        <div className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
           transaction.type === 'income' ? 'bg-emerald-100 dark:bg-emerald-900/30' :
           transaction.type === 'expense' ? 'bg-red-100 dark:bg-red-900/30' :
           'bg-slate-200 dark:bg-slate-700'
@@ -89,25 +91,26 @@ export function TransactionList({ transactions, accounts, categories }: Transact
           {getTransactionIcon(transaction.type)}
         </div>
         
-        <div className="space-y-0.5">
-          <p className="font-medium text-sm text-slate-900 dark:text-slate-50">
+        <div className="space-y-0.5 min-w-0">
+          <p className="font-medium text-sm text-slate-900 dark:text-slate-50 truncate pr-2">
             {transaction.description || 'Sin descripción'}
           </p>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <span>{transaction.account.name}</span>
+            <span className="truncate">{transaction.account.name}</span>
             {transaction.category && (
               <>
-              <span>•</span>
-              <span>{transaction.category?.icon} {transaction.category?.name}</span>
+                <span>•</span>
+                <span>{transaction.category?.icon} {transaction.category?.name}</span>
               </>
             )}
-            <span>•</span>
-            <span>{formatDate(transaction.date)}</span>
           </div>
+          <p className="text-xs text-slate-400 dark:text-slate-500">
+            {formatDate(transaction.date)}
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between sm:justify-end gap-2 pl-11 sm:pl-0">
         <div className="text-right">
           <p className={`font-semibold text-sm ${
             transaction.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 
@@ -118,11 +121,13 @@ export function TransactionList({ transactions, accounts, categories }: Transact
           </p>
         </div>
 
-        <TransactionActions 
-          transaction={transaction}
-          accounts={accounts}
-          categories={categories}
-        />
+        <div className="absolute top-2 right-2 sm:static">
+          <TransactionActions 
+            transaction={transaction}
+            accounts={accounts}
+            categories={categories}
+          />
+        </div>
       </div>
     </div>
   )

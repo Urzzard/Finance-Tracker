@@ -1,5 +1,7 @@
 # Finance Tracker - Agent Guidelines
 
+**Language**: El usuario siempre escribe y responde en español. Responde siempre en español.
+
 This document provides essential information for agentic coding assistants working on this Next.js finance tracker application.
 
 ## Project Overview

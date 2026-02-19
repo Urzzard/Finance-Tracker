@@ -103,7 +103,10 @@ export function TransactionActions({ transaction, accounts, categories }: Transa
   }
 
   const formatDateForInput = (date: Date) => {
-    return new Date(date).toISOString().split('T')[0]
+    const d = new Date(date)
+    const offset = d.getTimezoneOffset() * 60000
+    const localDate = new Date(d.getTime() - offset)
+    return localDate.toISOString().slice(0, 16)
   }
 
   const formatAmountForInput = (amount: number) => {
@@ -231,7 +234,7 @@ export function TransactionActions({ transaction, accounts, categories }: Transa
               <Input 
                 id="date" 
                 name="date" 
-                type="date" 
+                type="datetime-local" 
                 defaultValue={formatDateForInput(transaction.date)}
                 required 
               />
