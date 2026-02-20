@@ -10,14 +10,15 @@ const CreateAccountDialog = dynamic(() =>
 const TransactionList = dynamic(() => 
   import("../components/transaction-list").then(mod => mod.TransactionList)
 );
-const AccountActions = dynamic(() => 
-  import("../components/account-actions").then(mod => mod.AccountActions)
-);
 const ProfileDropdown = dynamic(() => 
   import("../components/profile-dropdown").then(mod => mod.ProfileDropdown)
 );
+const AccountSortableList = dynamic(() =>
+  import("../components/account-draggable-list").then(mod => mod.AccountSortableList)
+);
 
 import { db } from "../db";
+import { accounts } from "../db/schema";
 import { getTransactions, getCategories, getAccountBalances } from "./actions";
 
 const getCurrentUser = cache(async () => {
@@ -51,7 +52,7 @@ export default async function Dashboard() {
   // Obtenemos las cuentas del usuario logueado
   const userAccounts = await db.query.accounts.findMany({
     where: (accounts, { eq }) => eq(accounts.userId, user.id),
-    orderBy: (accounts, { desc }) => [desc(accounts.createdAt)],
+    orderBy: (accounts, { asc }) => [asc(accounts.sortOrder), asc(accounts.createdAt)],
   });
 
   // Obtenemos las transacciones, categorías y balances en paralelo
@@ -203,91 +204,21 @@ export default async function Dashboard() {
           </div>
 
           {/* LISTADO DE CUENTAS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {userAccounts.length === 0 ? (
-              // ESTADO VACÍO
-              <div className="col-span-full py-16 text-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/30">
-                <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl">💳</span>
-                </div>
-                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">Sin cuentas registradas</h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-6">Comienza creando tu primera cuenta para organizar tus finanzas</p>
-                <CreateAccountDialog />
+          {userAccounts.length === 0 ? (
+            <div className="py-16 text-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/30">
+              <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <span className="text-2xl">💳</span>
               </div>
-            ) : (
-              // CUENTAS
-              userAccounts.map((account) => (
-                <div key={account.id} className="group relative">
-                  <div className="relative bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300">
-                    {/* BOTON DE ACCIONES */}
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <AccountActions account={account} />
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-1">{account.name}</h3>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {account.currency === 'USD' ? 'Dólares' : 'Soles'}
-                          </p>
-                        </div>
-                        {account.isCredit && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200">
-                            Tarjeta de Crédito
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-baseline justify-between">
-                        <div className={`text-2xl font-bold ${
-                          (() => {
-                            const balance = accountBalances[account.id]
-                            return balance && balance.net < 0 
-                              ? 'text-red-600 dark:text-red-400' 
-                              : 'text-slate-900 dark:text-slate-50'
-                          })()
-                        }`}>
-                          {(() => {
-                            const balance = accountBalances[account.id]
-                            return balance ? formatCurrency(balance.net, balance.currency) : formatCurrency(0, account.currency)
-                          })()}
-                        </div>
-                        <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide">
-                          Balance
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                          <span>Ingresos</span>
-                        </div>
-                        <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                          {(() => {
-                            const balance = accountBalances[account.id]
-                            return balance ? formatCurrency(balance.income, balance.currency) : formatCurrency(0, account.currency)
-                          })()}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                          <span>Gastos</span>
-                        </div>
-                        <span className="font-medium text-red-600 dark:text-red-400">
-                          {(() => {
-                            const balance = accountBalances[account.id]
-                            return balance ? formatCurrency(balance.expense, balance.currency) : formatCurrency(0, account.currency)
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+              <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">Sin cuentas registradas</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6">Comienza creando tu primera cuenta para organizar tus finanzas</p>
+              <CreateAccountDialog />
+            </div>
+          ) : (
+            <AccountSortableList 
+              accounts={userAccounts} 
+              accountBalances={accountBalances} 
+            />
+          )}
         </div>
 
         {/* SECCIÓN DE TRANSACCIONES */}

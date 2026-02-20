@@ -22,11 +22,22 @@ export async function createAccount(formData: FormData) {
 
   // 3. Insertamos en la Base de Datos
   try {
+    // Obtener el máximo sortOrder actual para asignar el siguiente
+    const existingAccounts = await db.query.accounts.findMany({
+      where: eq(accounts.userId, user.id),
+      orderBy: [desc(accounts.sortOrder)],
+      limit: 1,
+    })
+    const nextSortOrder = existingAccounts.length > 0 && existingAccounts[0].sortOrder !== null 
+      ? existingAccounts[0].sortOrder + 1 
+      : 0
+
     await db.insert(accounts).values({
       userId: user.id,
       name: name,
       currency: currency,
       isCredit: isCredit,
+      sortOrder: nextSortOrder,
     })
 
     // 4. Recargamos la página para ver los cambios
@@ -253,3 +264,27 @@ export const getAccountBalances = cache(async () => {
     return {}
   }
 })
+
+export const updateAccountOrder = async (accountIds: number[], shouldRevalidate = true) => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'No autenticado' }
+  }
+
+  try {
+    for (let i = 0; i < accountIds.length; i++) {
+      await db.update(accounts)
+        .set({ sortOrder: i })
+        .where(eq(accounts.id, accountIds[i]))
+    }
+
+    if (shouldRevalidate) {
+      revalidatePath('/')
+    }
+    return { success: true }
+  } catch (error) {
+    console.error('Error actualizando orden:', error)
+    return { error: 'No se pudo actualizar el orden' }
+  }
+}

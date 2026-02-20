@@ -247,3 +247,19 @@ export default async function Page() {
   return <Component data={data} />
 }
 ```
+
+## Account Ordering (Drag & Drop)
+
+### Schema
+- `accounts.sortOrder`: integer nullable - orden personalizado por usuario
+- Ordenar por: `orderBy: (accounts, { asc }) => [asc(accounts.sortOrder), asc(accounts.createdAt)]`
+
+### Dependencies
+```bash
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+```
+
+### Component Pattern
+- Usar `AccountSortableList` en `src/components/account-draggable-list.tsx`
+- Server action: `updateAccountOrder(accountIds: number[])` en `actions.ts`
+- El componente es un Client Component con `'use client'`

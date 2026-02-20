@@ -9,11 +9,12 @@ export const transactionTypeEnum = pgEnum('transaction_type', ['income', 'expens
 // Aquí guardas: "BCP Ahorros", "Efectivo", "Plin", "Tarjeta de Crédito"
 export const accounts = pgTable('accounts', {
   id: serial('id').primaryKey(),
-  userId: uuid('user_id').notNull(), // Vinculado a Supabase Auth
-  name: text('name').notNull(), // Ej: "BCP Sueldo", "Cartera"
-  currency: text('currency').default('PEN').notNull(), // Soles, Dolares (Escalabilidad!)
-  isCredit: boolean('is_credit').default(false), // ¿Es tarjeta de crédito?
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  currency: text('currency').default('PEN').notNull(),
+  isCredit: boolean('is_credit').default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  sortOrder: integer('sort_order'), 
 });
 
 // 3. TABLA: CATEGORIES (Categorías)
