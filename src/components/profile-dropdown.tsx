@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useRouter } from 'next/navigation'
+import { LogoutButton } from './logout-button'
 
 interface ProfileDropdownProps {
   userEmail: string
@@ -19,12 +19,6 @@ interface ProfileDropdownProps {
 
 export function ProfileDropdown({ userEmail, accountCount }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const router = useRouter()
-
-  const handleLogout = async () => {
-    // Lógica de logout aquí
-    router.push('/login')
-  }
 
   // Extraer iniciales del email para el avatar
   const initials = userEmail
@@ -84,13 +78,7 @@ export function ProfileDropdown({ userEmail, accountCount }: ProfileDropdownProp
           
           <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800" />
           
-          <DropdownMenuItem 
-            onClick={handleLogout}
-            className="focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer text-red-600 dark:text-red-400"
-          >
-            <LogOut className="mr-3 h-4 w-4" />
-            <span>Cerrar sesión</span>
-          </DropdownMenuItem>
+          <LogoutButton />
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
