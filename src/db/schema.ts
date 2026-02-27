@@ -44,9 +44,25 @@ export const transactions = pgTable('transactions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// 5. TABLA: ACCOUNT GROUPS (Grupos de cuentas)
+export const accountGroups = pgTable('account_groups', {
+  id: serial('id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+  name: text('name').notNull(),
+  includeInTotal: boolean('include_in_total').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 6. TABLA: ACCOUNT GROUP MEMBERS (Tabla pivote many-to-many)
+export const accountGroupMembers = pgTable('account_group_members', {
+  groupId: integer('group_id').references(() => accountGroups.id, { onDelete: 'cascade' }).notNull(),
+  accountId: integer('account_id').references(() => accounts.id, { onDelete: 'cascade' }).notNull(),
+});
+
 // 5. RELACIONES (Para que Drizzle sepa cómo unir las tablas en las consultas)
 export const accountsRelations = relations(accounts, ({ many }) => ({
   transactions: many(transactions),
+  groupMembers: many(accountGroupMembers),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -61,5 +77,21 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   category: one(categories, {
     fields: [transactions.categoryId],
     references: [categories.id],
+  }),
+}));
+
+// 7. RELACIONES para Grupos
+export const accountGroupsRelations = relations(accountGroups, ({ many }) => ({
+  members: many(accountGroupMembers),
+}));
+
+export const accountGroupMembersRelations = relations(accountGroupMembers, ({ one }) => ({
+  group: one(accountGroups, {
+    fields: [accountGroupMembers.groupId],
+    references: [accountGroups.id],
+  }),
+  account: one(accounts, {
+    fields: [accountGroupMembers.accountId],
+    references: [accounts.id],
   }),
 }));

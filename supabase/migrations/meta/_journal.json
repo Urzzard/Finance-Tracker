@@ -22,6 +22,13 @@
       "when": 1771612366893,
       "tag": "0002_futuristic_the_hood",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772161537530,
+      "tag": "0003_material_maginty",
+      "breakpoints": true
     }
   ]
 }

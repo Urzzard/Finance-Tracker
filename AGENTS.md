@@ -30,6 +30,13 @@ npx drizzle-kit push       # Push schema to database
 npx drizzle-kit studio     # Open Drizzle Studio
 ```
 
+**Important:** Both `drizzle-kit generate` and `drizzle-kit push` are interactive commands that require user input. When prompted:
+- Press `+` and Enter to create new tables
+- If the command asks for input, stop and notify the user to run it manually
+
+### Interactive Commands Rule
+**CRITICAL:** If ANY terminal command requests user input (yes/no prompts, selection menus, etc.), STOP immediately and notify the user. Do not attempt to bypass interactive prompts.
+
 ### Testing
 No test framework is currently configured. When adding tests, check package.json for available scripts or ask the user for preferred testing setup.
 
