@@ -75,7 +75,7 @@ function SortableAccountCard({ account, formatCurrency }: SortableAccountProps) 
       
       <div className="relative bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 ml-6">
         {/* BOTON DE ACCIONES */}
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-3 right-3 duration-200">
           <AccountActions account={account} />
         </div>
         
@@ -88,7 +88,7 @@ function SortableAccountCard({ account, formatCurrency }: SortableAccountProps) 
               </p>
             </div>
             {account.isCredit && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200">
+              <span className="inline-flex items-center mr-4 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200">
                 Tarjeta de Crédito
               </span>
             )}

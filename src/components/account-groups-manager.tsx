@@ -53,6 +53,7 @@ export function AccountGroupsManager({ accounts, groups, accountBalances }: Acco
         sectionKey="accounts" 
         defaultExpanded={true}
         actions={<CreateAccountDialog groups={groups} />}
+        className="text-xs px-3 sm:text-sm sm:px-4"
       >
         <div className="mb-6">
           <AccountGroupsTabs 

@@ -72,10 +72,10 @@ export function AccountGroupsTabs({ groups, allAccounts, activeGroup, onGroupCha
                 e.stopPropagation();
                 setEditGroup(group);
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
               title="Editar grupo"
             >
-              <Pencil className="w-3 h-3" />
+              <Pencil className="w-3 h-3"/>
             </button>
           </div>
         ))}
@@ -84,9 +84,9 @@ export function AccountGroupsTabs({ groups, allAccounts, activeGroup, onGroupCha
           variant="outline"
           size="sm"
           onClick={() => setCreateDialogOpen(true)}
-          className="rounded-full px-3"
+          className="rounded-full px-3 dark:hover:bg-slate-500"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4"/>
         </Button>
       </div>
 

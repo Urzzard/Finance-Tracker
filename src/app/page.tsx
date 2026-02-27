@@ -239,6 +239,7 @@ export default async function Dashboard() {
               categories={userCategories} 
             />
           }
+          className="text-xs px-3 sm:text-sm sm:px-4"
         >
           <TransactionList 
             transactions={userTransactions} 
