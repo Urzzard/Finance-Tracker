@@ -8,6 +8,27 @@
       "when": 1769641251770,
       "tag": "0000_misty_dark_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771610787185,
+      "tag": "0001_curved_the_professor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771612366893,
+      "tag": "0002_futuristic_the_hood",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772161537530,
+      "tag": "0003_material_maginty",
+      "breakpoints": true
     }
   ]
 }

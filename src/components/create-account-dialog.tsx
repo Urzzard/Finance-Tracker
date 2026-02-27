@@ -24,7 +24,16 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { useActionToast } from './use-action-toast'
 
-export function CreateAccountDialog() {
+interface AccountGroup {
+  id: number
+  name: string
+}
+
+interface CreateAccountDialogProps {
+  groups: AccountGroup[]
+}
+
+export function CreateAccountDialog({ groups }: CreateAccountDialogProps) {
   const [open, setOpen] = useState(false)
   const { handleActionResult } = useActionToast()
 
@@ -81,6 +90,30 @@ export function CreateAccountDialog() {
                 ¿Es tarjeta de crédito? (Deuda)
             </Label>
           </div>
+
+          {/* Grupos */}
+          {groups.length > 0 && (
+            <div className="grid gap-2">
+              <Label>Agregar a grupos</Label>
+              <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                {groups.map((group) => (
+                  <div key={group.id} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`group-${group.id}`} 
+                      name="groups" 
+                      value={group.id.toString()}
+                    />
+                    <Label 
+                      htmlFor={`group-${group.id}`} 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {group.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="submit">Guardar Cuenta</Button>

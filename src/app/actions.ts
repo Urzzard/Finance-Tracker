@@ -5,7 +5,7 @@ import { createClient } from '../utils/supabase/server'
 import { cache } from 'react'
 import { db } from '../db'
 import { eq, and, desc } from 'drizzle-orm'
-import { accounts, transactions, categories } from '../db/schema'
+import { accounts, transactions, categories, accountGroups, accountGroupMembers } from '../db/schema'
 
 export async function createAccount(formData: FormData) {
   const supabase = await createClient()
@@ -19,15 +19,40 @@ export async function createAccount(formData: FormData) {
   const currency = formData.get('currency') as string || 'PEN'
   // El checkbox devuelve 'on' si está marcado, o null si no
   const isCredit = formData.get('isCredit') === 'on'
+  
+  // Grupos seleccionados (viene como array de strings)
+  const groupIds = formData.getAll('groups').map(g => parseInt(g as string, 10)).filter(g => !isNaN(g))
 
   // 3. Insertamos en la Base de Datos
   try {
-    await db.insert(accounts).values({
+    // Obtener el máximo sortOrder actual para asignar el siguiente
+    const existingAccounts = await db.query.accounts.findMany({
+      where: eq(accounts.userId, user.id),
+      orderBy: [desc(accounts.sortOrder)],
+      limit: 1,
+    })
+    const nextSortOrder = existingAccounts.length > 0 && existingAccounts[0].sortOrder !== null 
+      ? existingAccounts[0].sortOrder + 1 
+      : 0
+
+    const newAccount = await db.insert(accounts).values({
       userId: user.id,
       name: name,
       currency: currency,
       isCredit: isCredit,
-    })
+      sortOrder: nextSortOrder,
+    }).returning({ id: accounts.id })
+
+    const newAccountId = newAccount[0].id
+
+    // Asignar la cuenta a los grupos seleccionados
+    if (groupIds.length > 0) {
+      const groupMembers = groupIds.map(groupId => ({
+        groupId,
+        accountId: newAccountId,
+      }))
+      await db.insert(accountGroupMembers).values(groupMembers)
+    }
 
     // 4. Recargamos la página para ver los cambios
     revalidatePath('/')
@@ -253,3 +278,149 @@ export const getAccountBalances = cache(async () => {
     return {}
   }
 })
+
+export const updateAccountOrder = async (accountIds: number[], shouldRevalidate = true) => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'No autenticado' }
+  }
+
+  try {
+    for (let i = 0; i < accountIds.length; i++) {
+      await db.update(accounts)
+        .set({ sortOrder: i })
+        .where(eq(accounts.id, accountIds[i]))
+    }
+
+    if (shouldRevalidate) {
+      revalidatePath('/')
+    }
+    return { success: true }
+  } catch (error) {
+    console.error('Error actualizando orden:', error)
+    return { error: 'No se pudo actualizar el orden' }
+  }
+}
+
+// === ACCOUNT GROUPS ACTIONS ===
+
+export const getGroupsWithAccounts = cache(async () => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  try {
+    const groups = await db.query.accountGroups.findMany({
+      where: eq(accountGroups.userId, user.id),
+      with: {
+        members: {
+          with: {
+            account: true,
+          },
+        },
+      },
+    })
+
+    return groups.map(g => ({
+      id: g.id,
+      name: g.name,
+      includeInTotal: g.includeInTotal,
+      createdAt: g.createdAt,
+      accounts: g.members.map(m => m.account),
+    }))
+  } catch (error) {
+    console.error('Error obteniendo grupos:', error)
+    return []
+  }
+})
+
+export async function createGroup(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  const name = formData.get('name') as string
+  const includeInTotal = formData.get('includeInTotal') === 'on'
+
+  if (!name?.trim()) {
+    return { success: false, error: 'El nombre es requerido' }
+  }
+
+  try {
+    await db.insert(accountGroups).values({
+      userId: user.id,
+      name: name.trim(),
+      includeInTotal,
+    })
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    console.error('Error creating group:', error)
+    return { success: false, error: 'Error al crear grupo' }
+  }
+}
+
+export async function updateGroup(groupId: number, data: { name?: string; includeInTotal?: boolean }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  try {
+    await db.update(accountGroups)
+      .set(data)
+      .where(and(eq(accountGroups.id, groupId), eq(accountGroups.userId, user.id)))
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating group:', error)
+    return { success: false, error: 'Error al actualizar grupo' }
+  }
+}
+
+export async function deleteGroup(groupId: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  try {
+    await db.delete(accountGroups)
+      .where(and(eq(accountGroups.id, groupId), eq(accountGroups.userId, user.id)))
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting group:', error)
+    return { success: false, error: 'Error al eliminar grupo' }
+  }
+}
+
+export async function addAccountToGroup(groupId: number, accountId: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  try {
+    await db.insert(accountGroupMembers).values({ groupId, accountId })
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    console.error('Error adding account to group:', error)
+    return { success: false, error: 'Error al agregar cuenta al grupo' }
+  }
+}
+
+export async function removeAccountFromGroup(groupId: number, accountId: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  try {
+    await db.delete(accountGroupMembers)
+      .where(and(eq(accountGroupMembers.groupId, groupId), eq(accountGroupMembers.accountId, accountId)))
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    console.error('Error removing account from group:', error)
+    return { success: false, error: 'Error al quitar cuenta del grupo' }
+  }
+}

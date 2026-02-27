@@ -7,18 +7,28 @@ import { ModeToggle } from "../components/mod-toggle";
 const CreateAccountDialog = dynamic(() => 
   import("../components/create-account-dialog").then(mod => mod.CreateAccountDialog)
 );
-const TransactionList = dynamic(() => 
-  import("../components/transaction-list").then(mod => mod.TransactionList)
+const CreateTransactionDialog = dynamic(() => 
+  import("../components/create-transaction-dialog").then(mod => mod.CreateTransactionDialog)
 );
-const AccountActions = dynamic(() => 
-  import("../components/account-actions").then(mod => mod.AccountActions)
+const TransactionList = dynamic(() =>
+  import("../components/transaction-list").then(mod => mod.TransactionList)
 );
 const ProfileDropdown = dynamic(() => 
   import("../components/profile-dropdown").then(mod => mod.ProfileDropdown)
 );
+const AccountSortableList = dynamic(() =>
+  import("../components/account-draggable-list").then(mod => mod.AccountSortableList)
+);
+const AccountGroupsManager = dynamic(() =>
+  import("../components/account-groups-manager").then(mod => mod.AccountGroupsManager)
+);
+const CollapsibleSection = dynamic(() =>
+  import("../components/collapsible-section").then(mod => mod.CollapsibleSection)
+);
 
 import { db } from "../db";
-import { getTransactions, getCategories, getAccountBalances } from "./actions";
+import { accounts } from "../db/schema";
+import { getTransactions, getCategories, getAccountBalances, getGroupsWithAccounts } from "./actions";
 
 const getCurrentUser = cache(async () => {
   const supabase = await createClient();
@@ -51,31 +61,49 @@ export default async function Dashboard() {
   // Obtenemos las cuentas del usuario logueado
   const userAccounts = await db.query.accounts.findMany({
     where: (accounts, { eq }) => eq(accounts.userId, user.id),
-    orderBy: (accounts, { desc }) => [desc(accounts.createdAt)],
+    orderBy: (accounts, { asc }) => [asc(accounts.sortOrder), asc(accounts.createdAt)],
   });
 
-  // Obtenemos las transacciones, categorías y balances en paralelo
-  const [userTransactions, userCategories, accountBalances] = await Promise.all([
+  // Obtenemos las transacciones, categorías, balances y grupos en paralelo
+  const [userTransactions, userCategories, accountBalances, userGroups] = await Promise.all([
     getTransactions(),
     getCategories(),
-    getAccountBalances()
+    getAccountBalances(),
+    getGroupsWithAccounts()
   ]);
 
   // Calculamos balance general por moneda
-  const generalBalances = userAccounts.reduce((acc, account) => {
-    const balance = accountBalances[account.id]
-    if (!balance) return acc
-    
-    if (!acc[balance.currency]) {
-      acc[balance.currency] = { income: 0, expense: 0, net: 0, currency: balance.currency }
+  // Solo incluimos cuentas que tienen includeInTotal = true en sus grupos
+  const accountsIncludedInTotal = new Set<number>()
+  
+  userGroups.forEach(group => {
+    if (group.includeInTotal) {
+      group.accounts.forEach(account => {
+        accountsIncludedInTotal.add(account.id)
+      })
     }
-    
-    acc[balance.currency].income += balance.income
-    acc[balance.currency].expense += balance.expense
-    acc[balance.currency].net += balance.net
-    
-    return acc
-  }, {} as Record<string, { income: number; expense: number; net: number; currency: string }>)
+  })
+
+  const generalBalances = userAccounts
+    .filter(account => {
+      const accountInAnyGroup = userGroups.some(g => g.accounts.some(a => a.id === account.id))
+      if (!accountInAnyGroup) return true
+      return accountsIncludedInTotal.has(account.id)
+    })
+    .reduce((acc, account) => {
+      const balance = accountBalances[account.id]
+      if (!balance) return acc
+      
+      if (!acc[balance.currency]) {
+        acc[balance.currency] = { income: 0, expense: 0, net: 0, currency: balance.currency }
+      }
+      
+      acc[balance.currency].income += balance.income
+      acc[balance.currency].expense += balance.expense
+      acc[balance.currency].net += balance.net
+      
+      return acc
+    }, {} as Record<string, { income: number; expense: number; net: number; currency: string }>)
 
   // 3. Si hay usuario, mostramos el Dashboard básico
   return (
@@ -193,109 +221,33 @@ export default async function Dashboard() {
 
 
         {/* SECCIÓN DE CUENTAS */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-slate-600 dark:bg-slate-400 rounded-full"></div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Mis Cuentas</h2>
-            </div>
-            <CreateAccountDialog />
-          </div>
-
-          {/* LISTADO DE CUENTAS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {userAccounts.length === 0 ? (
-              // ESTADO VACÍO
-              <div className="col-span-full py-16 text-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/30">
-                <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl">💳</span>
-                </div>
-                <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">Sin cuentas registradas</h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-6">Comienza creando tu primera cuenta para organizar tus finanzas</p>
-                <CreateAccountDialog />
-              </div>
-            ) : (
-              // CUENTAS
-              userAccounts.map((account) => (
-                <div key={account.id} className="group relative">
-                  <div className="relative bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300">
-                    {/* BOTON DE ACCIONES */}
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <AccountActions account={account} />
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-1">{account.name}</h3>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {account.currency === 'USD' ? 'Dólares' : 'Soles'}
-                          </p>
-                        </div>
-                        {account.isCredit && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200">
-                            Tarjeta de Crédito
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-baseline justify-between">
-                        <div className={`text-2xl font-bold ${
-                          (() => {
-                            const balance = accountBalances[account.id]
-                            return balance && balance.net < 0 
-                              ? 'text-red-600 dark:text-red-400' 
-                              : 'text-slate-900 dark:text-slate-50'
-                          })()
-                        }`}>
-                          {(() => {
-                            const balance = accountBalances[account.id]
-                            return balance ? formatCurrency(balance.net, balance.currency) : formatCurrency(0, account.currency)
-                          })()}
-                        </div>
-                        <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide">
-                          Balance
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                          <span>Ingresos</span>
-                        </div>
-                        <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                          {(() => {
-                            const balance = accountBalances[account.id]
-                            return balance ? formatCurrency(balance.income, balance.currency) : formatCurrency(0, account.currency)
-                          })()}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                          <span>Gastos</span>
-                        </div>
-                        <span className="font-medium text-red-600 dark:text-red-400">
-                          {(() => {
-                            const balance = accountBalances[account.id]
-                            return balance ? formatCurrency(balance.expense, balance.currency) : formatCurrency(0, account.currency)
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <AccountGroupsManager 
+          accounts={userAccounts}
+          groups={userGroups}
+          accountBalances={accountBalances}
+        />
 
         {/* SECCIÓN DE TRANSACCIONES */}
-        <TransactionList 
-          transactions={userTransactions} 
-          accounts={userAccounts}
-          categories={userCategories}
-        />
+        <CollapsibleSection 
+          title="Transacciones" 
+          sectionKey="transactions" 
+          defaultExpanded={true}
+          count={userTransactions.length}
+          actions={
+            <CreateTransactionDialog 
+              accounts={userAccounts} 
+              categories={userCategories} 
+            />
+          }
+          className="text-xs px-3 sm:text-sm sm:px-4"
+        >
+          <TransactionList 
+            transactions={userTransactions} 
+            accounts={userAccounts}
+            categories={userCategories}
+            embedded={true}
+          />
+        </CollapsibleSection>
       </div>
     </div>
   );

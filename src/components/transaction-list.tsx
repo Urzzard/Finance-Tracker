@@ -40,9 +40,10 @@ interface TransactionListProps {
   transactions: Transaction[]
   accounts: Account[]
   categories: Category[]
+  embedded?: boolean
 }
 
-export function TransactionList({ transactions, accounts, categories }: TransactionListProps) {
+export function TransactionList({ transactions, accounts, categories, embedded = false }: TransactionListProps) {
   const formatAmount = (amount: number, currency: string) => {
     const prefix = currency === 'USD' ? '$' : 'S/'
     const formattedAmount = Math.abs(amount / 100).toLocaleString('es-PE', {
@@ -164,6 +165,9 @@ export function TransactionList({ transactions, accounts, categories }: Transact
   )
 
   if (transactions.length === 0) {
+    if (embedded) {
+      return renderEmptyState()
+    }
     return (
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
@@ -181,22 +185,8 @@ export function TransactionList({ transactions, accounts, categories }: Transact
     )
   }
 
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-6 bg-slate-600 dark:bg-slate-400 rounded-full"></div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Transacciones</h2>
-          <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-            {transactions.length}
-          </span>
-        </div>
-        <CreateTransactionDialog 
-          accounts={accounts} 
-          categories={categories} 
-        />
-      </div>
-
+  const content = (
+    <>
       <div className="flex flex-col lg:flex-row gap-6">
         {renderColumn(
           'Ingresos', 
@@ -233,6 +223,29 @@ export function TransactionList({ transactions, accounts, categories }: Transact
           </div>
         </div>
       )}
+    </>
+  )
+
+  if (embedded) {
+    return content
+  }
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-6 bg-slate-600 dark:bg-slate-400 rounded-full"></div>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Transacciones</h2>
+          <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+            {transactions.length}
+          </span>
+        </div>
+        <CreateTransactionDialog 
+          accounts={accounts} 
+          categories={categories} 
+        />
+      </div>
+      {content}
     </div>
   )
 }

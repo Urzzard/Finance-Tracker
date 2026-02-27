@@ -69,9 +69,11 @@ export function CreateTransactionDialog({ accounts, categories }: CreateTransact
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4"/>
-          Nueva Transacción
+        <Button className="flex items-center gap-2">
+          <span>
+            + Nueva Trans<span className="hidden sm:inline">acción</span>
+            <span className="inline sm:hidden">...</span>
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
