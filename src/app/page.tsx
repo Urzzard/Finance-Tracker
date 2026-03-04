@@ -25,10 +25,16 @@ const AccountGroupsManager = dynamic(() =>
 const CollapsibleSection = dynamic(() =>
   import("../components/collapsible-section").then(mod => mod.CollapsibleSection)
 );
+const CloseMonthButton = dynamic(() =>
+  import("../components/close-month-button").then(mod => mod.CloseMonthButton)
+);
+const MonthlyHistory = dynamic(() =>
+  import("../components/monthly-history").then(mod => mod.MonthlyHistory)
+);
 
 import { db } from "../db";
 import { accounts } from "../db/schema";
-import { getTransactions, getCategories, getAccountBalances, getGroupsWithAccounts } from "./actions";
+import { getTransactions, getCategories, getAccountBalances, getGroupsWithAccounts, getMonthlySummaries, getMonthsWithTransactions } from "./actions";
 
 const getCurrentUser = cache(async () => {
   const supabase = await createClient();
@@ -64,13 +70,33 @@ export default async function Dashboard() {
     orderBy: (accounts, { asc }) => [asc(accounts.sortOrder), asc(accounts.createdAt)],
   });
 
-  // Obtenemos las transacciones, categorías, balances y grupos en paralelo
-  const [userTransactions, userCategories, accountBalances, userGroups] = await Promise.all([
+  // Obtenemos las transacciones, categorías, balances, grupos y resúmenes mensuales en paralelo
+  const [userTransactions, userCategories, accountBalances, userGroups, userSummaries, monthsWithTransactions] = await Promise.all([
     getTransactions(),
     getCategories(),
     getAccountBalances(),
-    getGroupsWithAccounts()
+    getGroupsWithAccounts(),
+    getMonthlySummaries(),
+    getMonthsWithTransactions()
   ]);
+
+  // Lógica para mostrar banner de cierre de mes
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const isEndOfMonth = now.getDate() >= 25;
+  
+  const closedMonths = userSummaries.map(s => ({ year: s.year, month: s.month }));
+  const pendingMonthsList = monthsWithTransactions.filter(
+    m => !closedMonths.some(c => c.year === m.year && c.month === m.month)
+  );
+  const hasPendingMonths = pendingMonthsList.length > 0;
+  const canCloseNow = isEndOfMonth && hasPendingMonths;
+
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
 
   // Calculamos balance general por moneda
   // Solo incluimos cuentas que tienen includeInTotal = true en sus grupos
@@ -122,6 +148,32 @@ export default async function Dashboard() {
               />
           </div>
         </div>
+
+        {/* BANNER CERRAR MES */}
+        {hasPendingMonths && (
+          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-amber-800 dark:text-amber-200">
+                  Tienes {pendingMonthsList.length} mes{pendingMonthsList.length > 1 ? 'es' : ''} pendiente{pendingMonthsList.length > 1 ? 's' : ''} de cierre
+                </h3>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  {!isEndOfMonth 
+                    ? `Cierra los meses anteriores ahora. El mes actual podrás cerrarlo a partir del día 25.`
+                    : `Cierra los meses anteriores y el mes actual para mantener un registro histórico de tus finanzas.`
+                  }
+                </p>
+              </div>
+              <CloseMonthButton 
+                pendingMonths={pendingMonthsList} 
+                closedMonths={closedMonths}
+                canCloseNow={isEndOfMonth}
+                currentYear={currentYear}
+                currentMonth={currentMonth}
+              />
+            </div>
+          </div>
+        )}
 
         {/* BALANCE GENERAL - STATEMENT CARDS */}
         {Object.keys(generalBalances).length > 0 && (
@@ -246,6 +298,23 @@ export default async function Dashboard() {
             accounts={userAccounts}
             categories={userCategories}
             embedded={true}
+          />
+        </CollapsibleSection>
+
+        {/* SECCIÓN DE HISTORIAL DE CIERRES */}
+        <CollapsibleSection 
+          title="Historial de Cierres" 
+          sectionKey="history" 
+          defaultExpanded={false}
+          count={userSummaries.length}
+          className="text-xs px-3 sm:text-sm sm:px-4"
+        >
+          <MonthlyHistory 
+            summaries={userSummaries} 
+            pendingMonths={monthsWithTransactions}
+            canCloseNow={isEndOfMonth}
+            currentYear={currentYear}
+            currentMonth={currentMonth}
           />
         </CollapsibleSection>
       </div>

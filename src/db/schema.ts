@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp, uuid, pgEnum, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, timestamp, uuid, pgEnum, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // 1. ENUMS: Para mantener la data limpia
@@ -59,6 +59,20 @@ export const accountGroupMembers = pgTable('account_group_members', {
   accountId: integer('account_id').references(() => accounts.id, { onDelete: 'cascade' }).notNull(),
 });
 
+// 7. TABLA: MONTHLY SUMMARIES (Cierres mensuales)
+export const monthlySummaries = pgTable('monthly_summaries', {
+  id: serial('id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+  year: integer('year').notNull(),
+  month: integer('month').notNull(), // 1-12
+  totalIncome: integer('total_income').notNull().default(0),
+  totalExpense: integer('total_expense').notNull().default(0),
+  netSavings: integer('net_savings').notNull().default(0),
+  balancesByAccount: jsonb('balances_by_account'), // { accountId: balance }
+  balancesByGroup: jsonb('balances_by_group'), // { groupId: balance }
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // 5. RELACIONES (Para que Drizzle sepa cómo unir las tablas en las consultas)
 export const accountsRelations = relations(accounts, ({ many }) => ({
   transactions: many(transactions),
@@ -94,4 +108,9 @@ export const accountGroupMembersRelations = relations(accountGroupMembers, ({ on
     fields: [accountGroupMembers.accountId],
     references: [accounts.id],
   }),
+}));
+
+// 8. RELACIONES para Monthly Summaries
+export const monthlySummariesRelations = relations(monthlySummaries, ({ many }) => ({
+  // No tiene relaciones many-to-many, solo del usuario
 }));

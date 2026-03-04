@@ -21,7 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Plus } from "lucide-react"
+import { Plus, AlertTriangle } from "lucide-react"
 import { useActionToast } from './use-action-toast'
 
 interface Account {
@@ -45,6 +45,7 @@ interface CreateTransactionDialogProps {
 export function CreateTransactionDialog({ accounts, categories }: CreateTransactionDialogProps) {
   const [open, setOpen] = useState(false)
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense')
+  const [dateWarning, setDateWarning] = useState<string | null>(null)
   const { handleActionResult } = useActionToast()
 
   const getLocalDateTime = () => {
@@ -52,6 +53,31 @@ export function CreateTransactionDialog({ accounts, categories }: CreateTransact
     const offset = now.getTimezoneOffset() * 60000
     const localDate = new Date(now.getTime() - offset)
     return localDate.toISOString().slice(0, 16)
+  }
+
+  function handleDateChange(dateStr: string) {
+    if (!dateStr) {
+      setDateWarning(null)
+      return
+    }
+    
+    const selectedDate = new Date(dateStr)
+    const now = new Date()
+    const currentMonth = now.getMonth()
+    const currentYear = now.getFullYear()
+    const selectedMonth = selectedDate.getMonth()
+    const selectedYear = selectedDate.getFullYear()
+    
+    // Si es un mes anterior al actual
+    if (
+      selectedYear < currentYear || 
+      (selectedYear === currentYear && selectedMonth < currentMonth)
+    ) {
+      const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre']
+      setDateWarning(`¿Estás seguro que es de ${monthNames[selectedMonth]} ${selectedYear}?`)
+    } else {
+      setDateWarning(null)
+    }
   }
 
   async function handleSubmit(formData: FormData) {
@@ -170,8 +196,24 @@ export function CreateTransactionDialog({ accounts, categories }: CreateTransact
               name="date" 
               type="datetime-local" 
               defaultValue={getLocalDateTime()}
+              onChange={(e) => handleDateChange(e.target.value)}
               required 
             />
+            {dateWarning && (
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-amber-800 dark:text-amber-200">{dateWarning}</p>
+                  <button
+                    type="button"
+                    className="text-xs text-amber-600 dark:text-amber-400 underline mt-1 hover:text-amber-800"
+                    onClick={() => setDateWarning(null)}
+                  >
+                    Sí, es correcto
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

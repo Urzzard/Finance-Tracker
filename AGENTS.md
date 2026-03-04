@@ -1,6 +1,6 @@
 # Finance Tracker - Agent Guidelines
 
-**Language**: El usuario siempre escribe y responde en español. Responde siempre en español.
+**Note for Agents:** This file must be in English so agents can understand and use it properly. The user can read English too.
 
 This document provides essential information for agentic coding assistants working on this Next.js finance tracker application.
 
@@ -270,3 +270,23 @@ npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
 - Usar `AccountSortableList` en `src/components/account-draggable-list.tsx`
 - Server action: `updateAccountOrder(accountIds: number[])` en `actions.ts`
 - El componente es un Client Component con `'use client'`
+
+---
+
+## Project Documentation
+
+### docs/ROADMAP.md
+Pending features organized by priority:
+- High priority: Monthly Closing / Cierres Mensuales
+- Medium priority: Charts, Budgets, Savings Goals, Recurring Transactions
+- Low priority: Data Export, Alerts
+
+### docs/plans/
+Contains analysis and planning for features ready to implement:
+- 2026-02-26-account-groups-plan.md - **COMPLETED**
+- Other previous feature plans
+
+### Session Start Protocol
+1. Always check `docs/ROADMAP.md` first to see pending items
+2. Check `docs/plans/` for implementation plans
+3. If something is in progress, review the corresponding plan

@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../utils/supabase/server'
 import { cache } from 'react'
 import { db } from '../db'
-import { eq, and, desc } from 'drizzle-orm'
-import { accounts, transactions, categories, accountGroups, accountGroupMembers } from '../db/schema'
+import { eq, and, desc, gte, lte, sql, asc } from 'drizzle-orm'
+import { accounts, transactions, categories, accountGroups, accountGroupMembers, monthlySummaries } from '../db/schema'
 
 export async function createAccount(formData: FormData) {
   const supabase = await createClient()
@@ -422,5 +422,202 @@ export async function removeAccountFromGroup(groupId: number, accountId: number)
   } catch (error) {
     console.error('Error removing account from group:', error)
     return { success: false, error: 'Error al quitar cuenta del grupo' }
+  }
+}
+
+// === MONTHLY SUMMARIES ACTIONS ===
+
+export async function createMonthlySummary(year: number, month: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  const existing = await db.query.monthlySummaries.findFirst({
+    where: and(
+      eq(monthlySummaries.userId, user.id),
+      eq(monthlySummaries.year, year),
+      eq(monthlySummaries.month, month)
+    ),
+  })
+
+  if (existing) {
+    return { success: false, error: 'Este mes ya fue cerrado' }
+  }
+
+  const startDate = new Date(year, month - 1, 1)
+  const endDate = new Date(year, month, 0, 23, 59, 59)
+
+  const userAccounts = await db.query.accounts.findMany({
+    where: eq(accounts.userId, user.id),
+  })
+
+  const userGroups = await db.query.accountGroups.findMany({
+    where: eq(accountGroups.userId, user.id),
+    with: {
+      members: {
+        with: { account: true },
+      },
+    },
+  })
+
+  const result = await db.select({
+    type: transactions.type,
+    total: sql<number>`sum(${transactions.amount})`,
+  })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.userId, user.id),
+        gte(transactions.date, startDate),
+        lte(transactions.date, endDate)
+      )
+    )
+    .groupBy(transactions.type)
+
+  const income = result.find(r => r.type === 'income')?.total || 0
+  const expense = result.find(r => r.type === 'expense')?.total || 0
+
+  const balancesByAccount: Record<number, number> = {}
+  for (const account of userAccounts) {
+    const accountTransactions = await db.select({
+      type: transactions.type,
+      total: sql<number>`sum(${transactions.amount})`,
+    })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.accountId, account.id),
+          gte(transactions.date, startDate),
+          lte(transactions.date, endDate)
+        )
+      )
+      .groupBy(transactions.type)
+
+    let balance = 0
+    for (const t of accountTransactions) {
+      if (t.type === 'income' || t.type === 'transfer') {
+        balance += t.total
+      } else {
+        balance -= t.total
+      }
+    }
+    balancesByAccount[account.id] = balance
+  }
+
+  const balancesByGroup: Record<number, number> = {}
+  for (const group of userGroups) {
+    let groupBalance = 0
+    for (const member of group.members) {
+      groupBalance += balancesByAccount[member.account.id] || 0
+    }
+    balancesByGroup[group.id] = groupBalance
+  }
+
+  try {
+    await db.insert(monthlySummaries).values({
+      userId: user.id,
+      year,
+      month,
+      totalIncome: income,
+      totalExpense: expense,
+      netSavings: income - expense,
+      balancesByAccount,
+      balancesByGroup,
+    })
+    revalidatePath('/')
+    return { success: true }
+  } catch (error) {
+    console.error('Error creating monthly summary:', error)
+    return { success: false, error: 'Error al crear cierre mensual' }
+  }
+}
+
+export const getMonthlySummaries = cache(async () => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  try {
+    return await db.query.monthlySummaries.findMany({
+      where: eq(monthlySummaries.userId, user.id),
+      orderBy: [desc(monthlySummaries.year), desc(monthlySummaries.month)],
+    })
+  } catch (error) {
+    console.error('Error getting monthly summaries:', error)
+    return []
+  }
+})
+
+export async function getMonthlySummary(year: number, month: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  try {
+    return await db.query.monthlySummaries.findFirst({
+      where: and(
+        eq(monthlySummaries.userId, user.id),
+        eq(monthlySummaries.year, year),
+        eq(monthlySummaries.month, month)
+      ),
+    })
+  } catch (error) {
+    console.error('Error getting monthly summary:', error)
+    return null
+  }
+}
+
+export const getMonthsWithTransactions = cache(async () => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  try {
+    const userTransactions = await db.query.transactions.findMany({
+      where: eq(transactions.userId, user.id),
+      orderBy: [asc(transactions.date)],
+    })
+
+    const monthsSet = new Set<string>()
+    userTransactions.forEach(t => {
+      const date = new Date(t.date)
+      const key = `${date.getFullYear()}-${date.getMonth() + 1}`
+      monthsSet.add(key)
+    })
+
+    return Array.from(monthsSet).map(key => {
+      const [year, month] = key.split('-').map(Number)
+      return { year, month }
+    })
+  } catch (error) {
+    console.error('Error getting months with transactions:', error)
+    return []
+  }
+})
+
+export async function getTransactionsByMonth(year: number, month: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const startDate = new Date(year, month - 1, 1)
+  const endDate = new Date(year, month, 0, 23, 59, 59)
+
+  try {
+    return await db.query.transactions.findMany({
+      where: and(
+        eq(transactions.userId, user.id),
+        gte(transactions.date, startDate),
+        lte(transactions.date, endDate)
+      ),
+      with: {
+        account: true,
+        category: true,
+      },
+      orderBy: [desc(transactions.date)],
+    })
+  } catch (error) {
+    console.error('Error getting transactions by month:', error)
+    return []
   }
 }
