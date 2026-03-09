@@ -110,7 +110,7 @@ export function EditGroupDialog({ group, allAccounts, open, onOpenChange }: Edit
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <DialogTitle>Editar Grupo</DialogTitle>
           <DialogDescription>

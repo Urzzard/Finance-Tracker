@@ -40,7 +40,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <DialogTitle>Crear Grupo</DialogTitle>
           <DialogDescription>

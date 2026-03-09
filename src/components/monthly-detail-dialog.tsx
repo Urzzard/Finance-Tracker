@@ -79,7 +79,7 @@ export function MonthlyDetailDialog({ open, onOpenChange, year, month }: Monthly
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <DialogTitle>
             {monthNames[month - 1]} {year}
@@ -96,19 +96,19 @@ export function MonthlyDetailDialog({ open, onOpenChange, year, month }: Monthly
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Ingresos</div>
-                <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="text-sm sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(summary.totalIncome)}
                 </div>
               </div>
               <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Gastos</div>
-                <div className="text-xl font-bold text-red-600 dark:text-red-400">
+                <div className="text-sm sm:text-lg font-bold text-red-600 dark:text-red-400">
                   {formatCurrency(summary.totalExpense)}
                 </div>
               </div>
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Ahorro</div>
-                <div className={`text-xl font-bold ${summary.netSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                <div className={`text-sm sm:text-lg font-bold ${summary.netSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                   {formatCurrency(summary.netSavings)}
                 </div>
               </div>

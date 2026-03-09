@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createAccount } from '../app/actions'
+import { Plus } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -51,7 +52,10 @@ export function CreateAccountDialog({ groups }: CreateAccountDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>+ Nueva Cuenta</Button>
+        <Button size="sm">
+          <Plus className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Nueva Cuenta</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>

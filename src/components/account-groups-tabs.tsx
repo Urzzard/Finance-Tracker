@@ -61,21 +61,21 @@ export function AccountGroupsTabs({ groups, allAccounts, activeGroup, onGroupCha
               onContextMenu={(e) => handleGroupRightClick(e, group)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors pr-10 ${
                 activeGroup === group.id
-                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
+                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 opacity-100'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {group.name}
             </button>
-            <button
+<button
               onClick={(e) => {
                 e.stopPropagation();
                 setEditGroup(group);
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-transform hover:scale-150 hover:cursor-pointer"
               title="Editar grupo"
             >
-              <Pencil className="w-3 h-3"/>
+              <Pencil className={`w-3 h-3 ${activeGroup === group.id ? 'text-white dark:text-slate-900' : 'text-slate-500'}`}/>
             </button>
           </div>
         ))}

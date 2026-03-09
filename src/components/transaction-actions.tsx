@@ -140,7 +140,7 @@ export function TransactionActions({ transaction, accounts, categories }: Transa
 
       {/* DIÁLOGO DE EDICIÓN */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle>Editar Transacción</DialogTitle>
             <DialogDescription>

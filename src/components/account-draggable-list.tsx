@@ -65,15 +65,15 @@ function SortableAccountCard({ account, formatCurrency }: SortableAccountProps) 
 
   return (
     <div ref={setNodeRef} style={style} className="group relative">
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute left-2 top-1/2 -translate-y-1/2 cursor-grab z-10 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
-      >
-        <GripVertical className="w-4 h-4 text-slate-400" />
-      </div>
-      
-      <div className="relative bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 ml-6">
+      <div className="relative bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 overflow-visible">
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute -top-3 left-1/2 -translate-x-1/2 cursor-grab z-10 p-1.5 rounded bg-slate-100 dark:bg-slate-700 shadow-sm hover:bg-slate-200 dark:hover:bg-slate-600"
+        >
+          <GripVertical className="w-4 h-4 text-slate-400" />
+        </div>
+        
         {/* BOTON DE ACCIONES */}
         <div className="absolute top-3 right-3 duration-200">
           <AccountActions account={account} />

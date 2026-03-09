@@ -179,18 +179,24 @@ export function MonthlyHistory({ summaries, pendingMonths, canCloseNow, currentY
             {closedSummaries.map(summary => (
               <div
                 key={summary.id}
-                className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800"
+                className="flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800"
               >
-                <div className="flex-1 cursor-pointer" onClick={() => setSelectedMonth({ year: summary.year, month: summary.month })}>
-                  <div className="font-semibold text-slate-900 dark:text-slate-50">
+                <div className="flex-1 cursor-pointer min-w-0" onClick={() => setSelectedMonth({ year: summary.year, month: summary.month })}>
+                  <div className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-50">
                     {monthNames[summary.month - 1]} {summary.year}
                   </div>
-                  <div className="text-sm text-slate-500">
-                    {formatCurrency(summary.totalIncome)} ingresos • {formatCurrency(summary.totalExpense)} gastos
+                  <div className="text-xs text-slate-500">
+                    <span className="hidden sm:inline">
+                      {formatCurrency(summary.totalIncome)} ingresos • {formatCurrency(summary.totalExpense)} gastos
+                    </span>
+                    <span className="sm:hidden flex flex-col">
+                      <span>{formatCurrency(summary.totalIncome)} ingresos</span>
+                      <span>{formatCurrency(summary.totalExpense)} gastos</span>
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className={`text-lg font-bold ${summary.netSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`text-sm sm:text-lg font-bold ${summary.netSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                     {formatCurrency(summary.netSavings)}
                   </div>
                   <Button

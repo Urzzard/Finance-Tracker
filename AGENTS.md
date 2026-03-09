@@ -236,7 +236,7 @@ export async function createAccount(formData: FormData) {
   <DialogTrigger asChild>
     <Button>Open Dialog</Button>
   </DialogTrigger>
-  <DialogContent>
+  <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
     {/* Dialog content */}
   </DialogContent>
 </Dialog>

@@ -89,7 +89,7 @@ export function AccountActions({ account }: { account: Account }){
 
             {/* DIÁLOGO DE EDICIÓN */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent>
+                <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                     <DialogHeader>
                         <DialogTitle>Editar Cuenta</DialogTitle>
                     </DialogHeader>

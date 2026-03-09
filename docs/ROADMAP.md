@@ -4,7 +4,7 @@
 
 ### High Priority
 
-#### 1. Account Groups
+#### 1. Account Groups ✅ COMPLETADO
 Allows users to group accounts for better financial organization.
 
 **Implementation Details:**

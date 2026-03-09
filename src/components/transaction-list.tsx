@@ -113,7 +113,7 @@ export function TransactionList({ transactions, accounts, categories, embedded =
 
       <div className="flex items-center justify-between sm:justify-end gap-2 pl-11 sm:pl-0">
         <div className="text-right">
-          <p className={`font-semibold text-sm ${
+          <p className={`font-semibold text-sm sm:text-base ${
             transaction.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 
             transaction.type === 'expense' ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'
           }`}>
