@@ -133,7 +133,16 @@ function PendingMonthItem({ month, canCloseNow, currentYear, currentMonth }: Pen
 
 export function MonthlyHistory({ summaries, pendingMonths, canCloseNow, currentYear, currentMonth }: MonthlyHistoryProps) {
   const closedSummaries = summaries;
-  const pendingList = pendingMonths.filter(m => !isMonthClosed(m, summaries));
+  // Solo meses pasados (excluir el mes actual)
+  const pendingList = pendingMonths.filter(
+    m => !isMonthClosed(m, summaries) && !(m.year === currentYear && m.month === currentMonth)
+  );
+  // Mes actual (si tiene transacciones y es día 25+)
+  const currentMonthHasTransactions = pendingMonths.some(
+    m => m.year === currentYear && m.month === currentMonth
+  );
+  const currentMonthIsClosed = isMonthClosed({ year: currentYear, month: currentMonth }, summaries);
+  const showCurrentMonth = currentMonthHasTransactions && canCloseNow && !currentMonthIsClosed;
   const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(null);
 
   if (summaries.length === 0 && pendingMonths.length === 0) {
@@ -165,6 +174,23 @@ export function MonthlyHistory({ summaries, pendingMonths, canCloseNow, currentY
             {pendingList.map(m => (
               <PendingMonthItem key={`pending-${m.year}-${m.month}`} month={m} canCloseNow={canCloseNow} currentYear={currentYear} currentMonth={currentMonth} />
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mes actual (día 25+) */}
+      {showCurrentMonth && (
+        <div>
+          <h3 className="text-sm font-medium text-blue-500 dark:text-blue-400 mb-2">
+            Mes actual - Listo para cerrar
+          </h3>
+          <div className="space-y-2">
+            <PendingMonthItem 
+              month={{ year: currentYear, month: currentMonth }} 
+              canCloseNow={canCloseNow} 
+              currentYear={currentYear} 
+              currentMonth={currentMonth} 
+            />
           </div>
         </div>
       )}

@@ -290,3 +290,24 @@ Contains analysis and planning for features ready to implement:
 1. Always check `docs/ROADMAP.md` first to see pending items
 2. Check `docs/plans/` for implementation plans
 3. If something is in progress, review the corresponding plan
+
+## Implementation Protocol (IMPORTANT)
+
+### Before Any Action
+- **NEVER execute any code without user's explicit authorization**
+- User must confirm each step before execution
+
+### Step-by-Step Workflow
+1. **Present the task** you will work on
+2. **Wait for user confirmation** to proceed
+3. **Execute the code**
+4. **Run lint** to verify code quality
+5. **Notify user** when task is complete
+6. **Wait for user verification** that everything works
+7. Only then proceed to the next task
+
+### Verification Process
+After each task:
+- User tests the functionality in the browser
+- If issues found, fix them and re-verify
+- If all good, confirm to continue to next task

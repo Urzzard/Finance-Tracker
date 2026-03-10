@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Plus, AlertTriangle } from "lucide-react"
 import { useActionToast } from './use-action-toast'
+import { CategoryManagerDialog } from './category-manager-dialog'
 
 interface Account {
   id: number
@@ -146,7 +147,18 @@ export function CreateTransactionDialog({ accounts, categories }: CreateTransact
 
           {/* Categoría */}
           <div className="grid gap-2">
-            <Label htmlFor="categoryId">Categoría (opcional)</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="categoryId">Categoría (opcional)</Label>
+              <CategoryManagerDialog 
+                categories={categories}
+                trigger={
+                  <Button variant="ghost" size="sm" type="button" className="h-6 px-2 text-xs">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Gestionar
+                  </Button>
+                }
+              />
+            </div>
             <Select name="categoryId">
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona categoría" />

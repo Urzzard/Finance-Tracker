@@ -88,7 +88,9 @@ export default async function Dashboard() {
   
   const closedMonths = userSummaries.map(s => ({ year: s.year, month: s.month }));
   const pendingMonthsList = monthsWithTransactions.filter(
-    m => !closedMonths.some(c => c.year === m.year && c.month === m.month)
+    m => 
+      !closedMonths.some(c => c.year === m.year && c.month === m.month) &&
+      !(m.year === currentYear && m.month === currentMonth)
   );
   const hasPendingMonths = pendingMonthsList.length > 0;
   const canCloseNow = isEndOfMonth && hasPendingMonths;
@@ -149,7 +151,7 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        {/* BANNER CERRAR MES */}
+        {/* BANNER CERRAR MES (meses pasados) */}
         {hasPendingMonths && (
           <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
             <div className="flex items-center justify-between">
@@ -158,16 +160,36 @@ export default async function Dashboard() {
                   Tienes {pendingMonthsList.length} mes{pendingMonthsList.length > 1 ? 'es' : ''} pendiente{pendingMonthsList.length > 1 ? 's' : ''} de cierre
                 </h3>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
-                  {!isEndOfMonth 
-                    ? `Cierra los meses anteriores ahora. El mes actual podrás cerrarlo a partir del día 25.`
-                    : `Cierra los meses anteriores y el mes actual para mantener un registro histórico de tus finanzas.`
-                  }
+                  Cierra los meses anteriores para mantener un registro histórico de tus finanzas.
                 </p>
               </div>
               <CloseMonthButton 
                 pendingMonths={pendingMonthsList} 
                 closedMonths={closedMonths}
-                canCloseNow={isEndOfMonth}
+                canCloseNow={true}
+                currentYear={currentYear}
+                currentMonth={currentMonth}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* BANNER CERRAR MES ACTUAL (día 25+) */}
+        {isEndOfMonth && (
+          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200">
+                  Es momento de cerrar el mes de {monthNames[currentMonth - 1]}
+                </h3>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Ya puedes realizar el cierre mensual. Tus finanzas te lo agradecerán.
+                </p>
+              </div>
+              <CloseMonthButton 
+                pendingMonths={[{ year: currentYear, month: currentMonth }]} 
+                closedMonths={closedMonths}
+                canCloseNow={true}
                 currentYear={currentYear}
                 currentMonth={currentMonth}
               />
