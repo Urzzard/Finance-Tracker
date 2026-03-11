@@ -30,9 +30,11 @@ interface ToastProviderProps {
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<Toast[]>([])
+  const toastIdRef = React.useRef(0)
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success', duration = 3000) => {
-    const id = Date.now().toString()
+    toastIdRef.current += 1
+    const id = `toast-${toastIdRef.current}`
     const newToast = { id, message, type, duration }
     
     setToasts(prev => [...prev, newToast])

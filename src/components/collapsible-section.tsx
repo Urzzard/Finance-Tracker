@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +14,14 @@ interface CollapsibleSectionProps {
   count?: number;
 }
 
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
+
 export function CollapsibleSection({
   title,
   sectionKey,
@@ -23,16 +31,13 @@ export function CollapsibleSection({
   actions,
   count,
 }: CollapsibleSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
+  const isHydrated = useHydrated();
+  
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (!isHydrated) return defaultExpanded;
     const stored = localStorage.getItem(`section_${sectionKey}`);
-    if (stored !== null) {
-      setIsExpanded(stored === 'true');
-    }
-  }, [sectionKey]);
+    return stored !== null ? stored === 'true' : defaultExpanded;
+  });
 
   const toggle = () => {
     const newValue = !isExpanded;
@@ -40,7 +45,7 @@ export function CollapsibleSection({
     localStorage.setItem(`section_${sectionKey}`, String(newValue));
   };
 
-  const expanded = mounted ? isExpanded : defaultExpanded;
+  const expanded = isHydrated ? isExpanded : defaultExpanded;
 
   return (
     <div className={cn("bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-800 mb-8", className)}>

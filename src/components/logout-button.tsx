@@ -32,7 +32,8 @@ export function LogoutButton() {
       } else {
         throw new Error('Error al cerrar sesión')
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err)
       showToast('Error al cerrar sesión', 'error')
     } finally {
       setIsSubmitting(false)

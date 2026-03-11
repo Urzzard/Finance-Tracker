@@ -36,7 +36,6 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { updateTransaction, deleteTransaction } from '../app/actions'
 import { useActionToast } from './use-action-toast'
 
@@ -253,7 +252,7 @@ export function TransactionActions({ transaction, accounts, categories }: Transa
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar transacción?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará permanentemente la transacción "<strong>{transaction.description}</strong>" 
+              Esta acción eliminará permanentemente la transacción &quot;<strong>{transaction.description}</strong>&quot; 
               por <strong>{formatAmountForInput(transaction.amount)}</strong>. 
               Esta acción no se puede deshacer.
             </AlertDialogDescription>

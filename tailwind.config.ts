@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
 
 const config = {
   // 1. Aquí activamos el modo manual para que el botón funcione
@@ -80,7 +81,7 @@ const config = {
     },
   },
   // 4. Importamos el plugin de animaciones de Shadcn  
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindAnimate],
 } satisfies Config;
 
 export default config;

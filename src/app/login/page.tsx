@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useActionToast } from '../../components/use-action-toast'
 import { login, signup } from './actions'
@@ -16,8 +16,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+function LoginLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
+      <div className="animate-pulse text-slate-500">Cargando...</div>
+    </div>
+  )
+}
+
 function LoginContent() {
-  const searchParams = useSearchParams()
+  // useSearchParams debe llamarse dentro de un Suspense boundary
+  useSearchParams()
   const router = useRouter()
   const { handleActionResult, showToast } = useActionToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -174,4 +183,10 @@ function LoginContent() {
   )
 }
 
-export default LoginContent
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginContent />
+    </Suspense>
+  )
+}

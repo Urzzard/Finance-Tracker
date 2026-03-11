@@ -4,9 +4,6 @@ import { cache } from "react";
 import dynamic from "next/dynamic";
 import { ModeToggle } from "../components/mod-toggle";
 
-const CreateAccountDialog = dynamic(() => 
-  import("../components/create-account-dialog").then(mod => mod.CreateAccountDialog)
-);
 const CreateTransactionDialog = dynamic(() => 
   import("../components/create-transaction-dialog").then(mod => mod.CreateTransactionDialog)
 );
@@ -15,9 +12,6 @@ const TransactionList = dynamic(() =>
 );
 const ProfileDropdown = dynamic(() => 
   import("../components/profile-dropdown").then(mod => mod.ProfileDropdown)
-);
-const AccountSortableList = dynamic(() =>
-  import("../components/account-draggable-list").then(mod => mod.AccountSortableList)
 );
 const AccountGroupsManager = dynamic(() =>
   import("../components/account-groups-manager").then(mod => mod.AccountGroupsManager)
@@ -33,7 +27,6 @@ const MonthlyHistory = dynamic(() =>
 );
 
 import { db } from "../db";
-import { accounts } from "../db/schema";
 import { getTransactions, getCategories, getAccountBalances, getGroupsWithAccounts, getMonthlySummaries, getMonthsWithTransactions } from "./actions";
 
 const getCurrentUser = cache(async () => {
@@ -93,7 +86,6 @@ export default async function Dashboard() {
       !(m.year === currentYear && m.month === currentMonth)
   );
   const hasPendingMonths = pendingMonthsList.length > 0;
-  const canCloseNow = isEndOfMonth && hasPendingMonths;
 
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { User, LogOut, CreditCard } from 'lucide-react'
+import { User, CreditCard } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

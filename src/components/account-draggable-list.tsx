@@ -139,7 +139,7 @@ interface AccountSortableListProps {
 export function AccountSortableList({ accounts, accountBalances }: AccountSortableListProps) {
   const [items, setItems] = useState<Account[]>([])
   const [isSaving, setIsSaving] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

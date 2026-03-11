@@ -111,6 +111,6 @@ export const accountGroupMembersRelations = relations(accountGroupMembers, ({ on
 }));
 
 // 8. RELACIONES para Monthly Summaries
-export const monthlySummariesRelations = relations(monthlySummaries, ({ many }) => ({
+export const monthlySummariesRelations = relations(monthlySummaries, () => ({
   // No tiene relaciones many-to-many, solo del usuario
 }));
