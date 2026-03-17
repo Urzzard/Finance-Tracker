@@ -295,6 +295,8 @@ Contains analysis and planning for features ready to implement:
 
 ### Before Any Action
 - **NEVER execute any code without user's explicit authorization**
+- **NEVER make git commits automatically** - Only the user can commit
+- **NEVER run git push** - Only suggest the command
 - User must confirm each step before execution
 
 ### Step-by-Step Workflow
@@ -302,8 +304,8 @@ Contains analysis and planning for features ready to implement:
 2. **Wait for user confirmation** to proceed
 3. **Execute the code**
 4. **Run lint** to verify code quality
-5. **Notify user** when task is complete
-6. **Wait for user verification** that everything works
+5. **Show the result** to the user for review
+6. **Wait for user approval** before continuing
 7. Only then proceed to the next task
 
 ### Verification Process
@@ -311,3 +313,9 @@ After each task:
 - User tests the functionality in the browser
 - If issues found, fix them and re-verify
 - If all good, confirm to continue to next task
+
+### Git Operations Rule (IMPORTANT)
+- **NEVER make git commits automatically** - Always suggest or show the command, but let the user execute it
+- **NEVER run git push** - Only suggest the command
+- **DO run**: git status, git diff, git log, git add -p (for staging)
+- The user must explicitly confirm before any write operations (commit, push, merge, etc.)

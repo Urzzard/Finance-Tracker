@@ -1,32 +1,31 @@
-import { createClient } from "../utils/supabase/server";
+import { createClient } from "../../utils/supabase/server";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import dynamic from "next/dynamic";
-import { ModeToggle } from "../components/mod-toggle";
 
 const CreateTransactionDialog = dynamic(() => 
-  import("../components/create-transaction-dialog").then(mod => mod.CreateTransactionDialog)
+  import("../../components/create-transaction-dialog").then(mod => mod.CreateTransactionDialog)
 );
 const TransactionList = dynamic(() =>
-  import("../components/transaction-list").then(mod => mod.TransactionList)
+  import("../../components/transaction-list").then(mod => mod.TransactionList)
 );
 const ProfileDropdown = dynamic(() => 
-  import("../components/profile-dropdown").then(mod => mod.ProfileDropdown)
+  import("../../components/profile-dropdown").then(mod => mod.ProfileDropdown)
 );
 const AccountGroupsManager = dynamic(() =>
-  import("../components/account-groups-manager").then(mod => mod.AccountGroupsManager)
+  import("../../components/account-groups-manager").then(mod => mod.AccountGroupsManager)
 );
 const CollapsibleSection = dynamic(() =>
-  import("../components/collapsible-section").then(mod => mod.CollapsibleSection)
+  import("../../components/collapsible-section").then(mod => mod.CollapsibleSection)
 );
 const CloseMonthButton = dynamic(() =>
-  import("../components/close-month-button").then(mod => mod.CloseMonthButton)
+  import("../../components/close-month-button").then(mod => mod.CloseMonthButton)
 );
 const MonthlyHistory = dynamic(() =>
-  import("../components/monthly-history").then(mod => mod.MonthlyHistory)
+  import("../../components/monthly-history").then(mod => mod.MonthlyHistory)
 );
 
-import { db } from "../db";
+import { db } from "../../db";
 import { getTransactions, getCategories, getAccountBalances, getGroupsWithAccounts, getMonthlySummaries, getMonthsWithTransactions } from "./actions";
 
 const getCurrentUser = cache(async () => {
@@ -35,7 +34,6 @@ const getCurrentUser = cache(async () => {
   return { user, error };
 });
 
-// Función para formatear moneda con separador de miles
 const formatCurrency = (amount: number, currency: string) => {
   const prefix = currency === 'USD' ? '$' : 'S/'
   const absoluteAmount = Math.abs(amount / 100)
@@ -48,22 +46,17 @@ const formatCurrency = (amount: number, currency: string) => {
 };
 
 export default async function Dashboard() {
-  // 1. Verificamos quién eres (con cache para deduplicar)
   const { user, error } = await getCurrentUser();
 
-  // 2. Si no hay usuario, fuera de aquí (al login)
   if (error || !user) {
     redirect('/login');
   }
 
-  // --- CONSULTA A BASE DE DATOS ---
-  // Obtenemos las cuentas del usuario logueado
   const userAccounts = await db.query.accounts.findMany({
     where: (accounts, { eq }) => eq(accounts.userId, user.id),
     orderBy: (accounts, { asc }) => [asc(accounts.sortOrder), asc(accounts.createdAt)],
   });
 
-  // Obtenemos las transacciones, categorías, balances, grupos y resúmenes mensuales en paralelo
   const [userTransactions, userCategories, accountBalances, userGroups, userSummaries, monthsWithTransactions] = await Promise.all([
     getTransactions(),
     getCategories(),
@@ -73,7 +66,6 @@ export default async function Dashboard() {
     getMonthsWithTransactions()
   ]);
 
-  // Lógica para mostrar banner de cierre de mes
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
@@ -92,8 +84,6 @@ export default async function Dashboard() {
     'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
-  // Calculamos balance general por moneda
-  // Solo incluimos cuentas que tienen includeInTotal = true en sus grupos
   const accountsIncludedInTotal = new Set<number>()
   
   userGroups.forEach(group => {
@@ -125,7 +115,6 @@ export default async function Dashboard() {
       return acc
     }, {} as Record<string, { income: number; expense: number; net: number; currency: string }>)
 
-  // 3. Si hay usuario, mostramos el Dashboard básico
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300">
       <div className="p-8">
@@ -135,7 +124,6 @@ export default async function Dashboard() {
           </h1>
           
           <div className="flex gap-2 items-center">
-              <ModeToggle />
               <ProfileDropdown 
                 userEmail={user.email || ''}
                 accountCount={userAccounts.length}
@@ -143,7 +131,6 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        {/* BANNER CERRAR MES (meses pasados) */}
         {hasPendingMonths && (
           <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
             <div className="flex items-center justify-between">
@@ -166,7 +153,6 @@ export default async function Dashboard() {
           </div>
         )}
 
-        {/* BANNER CERRAR MES ACTUAL (día 25+) */}
         {isEndOfMonth && (
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
             <div className="flex items-center justify-between">
@@ -189,7 +175,6 @@ export default async function Dashboard() {
           </div>
         )}
 
-        {/* BALANCE GENERAL - STATEMENT CARDS */}
         {Object.keys(generalBalances).length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-6">
@@ -227,8 +212,8 @@ export default async function Dashboard() {
                         <div className="space-y-1">
                           <div className={`text-4xl font-bold ${
                             balance.net >= 0 
-                              ? 'text-emerald-600 dark:text-emerald-400' 
-                              : 'text-red-600 dark:text-red-400'
+                                ? 'text-emerald-600 dark:text-emerald-400' 
+                                : 'text-red-600 dark:text-red-400'
                           }`}>
                             {formatCurrency(balance.net, balance.currency)}
                           </div>
@@ -284,16 +269,12 @@ export default async function Dashboard() {
           </div>
         )}
 
-
-
-        {/* SECCIÓN DE CUENTAS */}
         <AccountGroupsManager 
           accounts={userAccounts}
           groups={userGroups}
           accountBalances={accountBalances}
         />
 
-        {/* SECCIÓN DE TRANSACCIONES */}
         <CollapsibleSection 
           title="Transacciones" 
           sectionKey="transactions" 
@@ -315,7 +296,6 @@ export default async function Dashboard() {
           />
         </CollapsibleSection>
 
-        {/* SECCIÓN DE HISTORIAL DE CIERRES */}
         <CollapsibleSection 
           title="Historial de Cierres" 
           sectionKey="history" 

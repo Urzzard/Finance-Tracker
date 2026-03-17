@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useActionToast } from '../../components/use-action-toast'
+import { useActionToast } from '../../../components/use-action-toast'
 import { login, signup } from './actions'
 import { Button } from "@/components/ui/button"
 import { Loader2 } from 'lucide-react'
@@ -25,7 +25,6 @@ function LoginLoading() {
 }
 
 function LoginContent() {
-  // useSearchParams debe llamarse dentro de un Suspense boundary
   useSearchParams()
   const router = useRouter()
   const { handleActionResult, showToast } = useActionToast()
@@ -34,14 +33,12 @@ function LoginContent() {
 
   const handleLogin = async (formData: FormData) => {
     setIsSubmitting(true)
-    showToast('Iniciando sesión...', 'info', 3000) // Mantiene visible hasta la redirección
+    showToast('Iniciando sesión...', 'info', 3000)
     const result = await login(formData)
     if (result.success) {
-      // No mostrar toast de éxito, mantener el de loading visible hasta la redirección
       router.push('/')
       showToast('¡Login exitoso!', 'success', 3000)
       setTimeout(() => {
-        // Solo después de la redirección reseteamos el estado
         setIsSubmitting(false)
       }, 3000)
     } else {
@@ -52,7 +49,7 @@ function LoginContent() {
 
   const handleSignup = async (formData: FormData) => {
     setIsSubmitting(true)
-    showToast('Creando cuenta...', 'info', 3000) // Mantiene visible hasta que se reemplace
+    showToast('Creando cuenta...', 'info', 3000)
     const result = await signup(formData)
     if (result.success && result.info) {
       showToast(result.info, 'info')
@@ -65,7 +62,6 @@ function LoginContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4 relative">
       <div className="w-full max-w-md">
-        {/* Logo/Brand */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg mb-4">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,12 +158,10 @@ function LoginContent() {
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <div className="text-center mt-8 text-sm text-slate-600 dark:text-slate-400">
           <p>Tus finanzas, organizadas y seguras</p>
         </div>
         
-        {/* Loading Overlay */}
         {isSubmitting && (
           <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
             <div className="flex flex-col items-center gap-3">

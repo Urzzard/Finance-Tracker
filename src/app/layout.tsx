@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-// 1. IMPORTAMOS LOS PROVIDERS
 import { ThemeProvider } from "../components/theme-provider";
 import { ToastProvider } from "../components/toast-provider";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,11 +26,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      {/* 
-         suppressHydrationWarning es necesario en <html> 
-         para que next-themes no lance errores en la consola 
-         al detectar diferencias entre servidor y cliente.
-      */}
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ToastProvider>

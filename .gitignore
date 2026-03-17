@@ -1,65 +1,15 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-.pnp.js
-.yarn/install-state.gz
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-
-Es fundamental tener un buen .gitignore antes de subirlo a GitHub, especialmente porque estamos manejando claves secretas de Supabase y URLs de bases de datos. Si subes tu archivo .env.local por error, cualquier persona podrá entrar a tu base de datos.
-Aquí tienes el .gitignore ideal para tu stack (Next.js + Drizzle + Supabase):
-Archivo: .gitignore (Crea este archivo en la raíz del proyecto)
-code
-Text
-# Dependencias
+# Dependencies
 node_modules/
 .pnp
 .pnp.js
 .yarn/install-state.gz
 
-# Next.js (Salida de compilación)
+# Next.js
 .next/
 out/
 build/
 
-# Archivos de entorno y secretos (VITAL NO SUBIR ESTOS)
+# Environment variables (CRITICAL - Supabase secrets)
 .env
 .env.local
 .env.development.local
@@ -72,16 +22,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# Sistema operativo
+# System
 .DS_Store
 Thumbs.db
 *.swp
 
-# Drizzle y herramientas de base de datos
-# Nota: NO ignoramos la carpeta 'migrations' porque la necesitaremos en producción.
-# Pero sí ignoramos archivos temporales o copias locales de la DB si usaras SQLite.
+# Database (SQLite local)
 *.db
 *.db-journal
 
@@ -89,5 +36,5 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
-#agentes
-.agents
+# Agents
+.agents/
