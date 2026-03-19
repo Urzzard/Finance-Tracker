@@ -293,29 +293,48 @@ Contains analysis and planning for features ready to implement:
 
 ## Implementation Protocol (IMPORTANT)
 
+### Core Rule: User Authorization Required for EVERY Action
+- **EVERY task/step requires explicit user authorization before execution**
+- Never execute code without asking first
+- Never skip asking for permission
+- The user controls the pace: one task at a time
+
 ### Before Any Action
 - **NEVER execute any code without user's explicit authorization**
-- **NEVER make git commits automatically** - Only the user can commit
+- **NEVER make git commits automatically** - Only suggest the command, user must execute it
 - **NEVER run git push** - Only suggest the command
+- **NEVER run build** - Only lint for verification if explicitly requested
 - User must confirm each step before execution
 
 ### Step-by-Step Workflow
-1. **Present the task** you will work on
-2. **Wait for user confirmation** to proceed
-3. **Execute the code**
-4. **Run lint** to verify code quality
-5. **Show the result** to the user for review
-6. **Wait for user approval** before continuing
-7. Only then proceed to the next task
+1. **Present the task** I will work on
+2. **Ask:** "¿Autorizas la ejecución de esta tarea?"
+3. **Wait for user confirmation** to proceed
+4. **Execute the code**
+5. **Run lint** to verify code quality (execute without asking)
+6. **Show the result** to the user for review
+7. **Ask:** "¿Procedo con la siguiente tarea?"
+8. **Only then proceed** to the next task
 
 ### Verification Process
 After each task:
 - User tests the functionality in the browser
 - If issues found, fix them and re-verify
-- If all good, confirm to continue to next task
+- If all good, ask for confirmation to continue
+
+### Task Execution Model
+- One task at a time
+- Wait for user approval after each task
+- Do not queue or batch multiple tasks
+- User decides when to proceed
 
 ### Git Operations Rule (IMPORTANT)
 - **NEVER make git commits automatically** - Always suggest or show the command, but let the user execute it
 - **NEVER run git push** - Only suggest the command
 - **DO run**: git status, git diff, git log, git add -p (for staging)
 - The user must explicitly confirm before any write operations (commit, push, merge, etc.)
+
+### Planning Rule
+When creating implementation plans, all "commit" steps should state:
+- "**User executes:** `git commit...`"
+- NOT automatic execution by the agent

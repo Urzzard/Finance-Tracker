@@ -11,8 +11,8 @@ export function MainContent({ children }: { children: React.ReactNode }) {
       "min-h-screen transition-all duration-300",
       // Mobile: sin margen (overlay)
       isMobile && "ml-0",
-      // Desktop: 70px collapsed, 250px expanded
-      !isMobile && (isOpen ? "lg:ml-[250px]" : "lg:ml-[70px]")
+      // Tablet/Desktop: 70px collapsed, 250px expanded
+      !isMobile && (isOpen ? "md:ml-[250px]" : "md:ml-[70px]")
     )}>
       {children}
     </main>

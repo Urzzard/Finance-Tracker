@@ -24,6 +24,9 @@ const CloseMonthButton = dynamic(() =>
 const MonthlyHistory = dynamic(() =>
   import("../../components/monthly-history").then(mod => mod.MonthlyHistory)
 );
+const DashboardCharts = dynamic(() =>
+  import("../../components/charts/dashboard-charts").then(mod => mod.DashboardCharts)
+);
 
 import { db } from "../../db";
 import { getTransactions, getCategories, getAccountBalances, getGroupsWithAccounts, getMonthlySummaries, getMonthsWithTransactions } from "./actions";
@@ -268,6 +271,8 @@ export default async function Dashboard() {
             </div>
           </div>
         )}
+
+        <DashboardCharts />
 
         <AccountGroupsManager 
           accounts={userAccounts}

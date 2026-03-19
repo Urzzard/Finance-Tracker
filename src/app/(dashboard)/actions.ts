@@ -652,3 +652,136 @@ export async function getTransactionsByMonth(year: number, month: number) {
     return []
   }
 }
+
+export interface CategoryBarData {
+  categoryId: number
+  categoryName: string
+  categoryIcon: string
+  type: 'income' | 'expense'
+  total: number
+}
+
+export async function getCategoryBarData(
+  years: number[],
+  months: number[]
+): Promise<CategoryBarData[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  try {
+    const startDate = new Date(Math.min(...years), Math.min(...months) - 1, 1)
+    const endDate = new Date(Math.max(...years), Math.max(...months), 0, 23, 59, 59)
+
+    const result = await db.select({
+      categoryId: transactions.categoryId,
+      categoryName: categories.name,
+      categoryIcon: categories.icon,
+      type: transactions.type,
+      total: sql<number>`sum(${transactions.amount})`,
+    })
+      .from(transactions)
+      .leftJoin(categories, eq(transactions.categoryId, categories.id))
+      .where(
+        and(
+          eq(transactions.userId, user.id),
+          gte(transactions.date, startDate),
+          lte(transactions.date, endDate)
+        )
+      )
+      .groupBy(transactions.categoryId, categories.name, categories.icon, transactions.type)
+
+    return result.map(r => ({
+      categoryId: r.categoryId || 0,
+      categoryName: r.categoryName || 'Sin categoría',
+      categoryIcon: r.categoryIcon || '📌',
+      type: r.type as 'income' | 'expense',
+      total: r.total || 0,
+    }))
+  } catch (error) {
+    console.error('Error getting category bar data:', error)
+    return []
+  }
+}
+
+export interface MonthlyLineData {
+  year: number
+  month: number
+  monthName: string
+  income: number
+  expense: number
+  net: number
+}
+
+export async function getMonthlyLineData(
+  years: number[],
+  months: number[]
+): Promise<MonthlyLineData[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  try {
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    
+    const startDate = new Date(Math.min(...years), Math.min(...months) - 1, 1)
+    const endDate = new Date(Math.max(...years), Math.max(...months), 0, 23, 59, 59)
+
+    const result = await db.select({
+      year: sql<number>`extract(year from ${transactions.date})`,
+      month: sql<number>`extract(month from ${transactions.date})`,
+      type: transactions.type,
+      total: sql<number>`sum(${transactions.amount})`,
+    })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, user.id),
+          gte(transactions.date, startDate),
+          lte(transactions.date, endDate)
+        )
+      )
+      .groupBy(
+        sql`extract(year from ${transactions.date})`,
+        sql`extract(month from ${transactions.date})`,
+        transactions.type
+      )
+
+    const monthlyData: Record<string, MonthlyLineData> = {}
+
+    result.forEach(r => {
+      const year = Number(r.year)
+      const month = Number(r.month)
+      const key = `${year}-${month}`
+
+      if (!monthlyData[key]) {
+        monthlyData[key] = {
+          year,
+          month,
+          monthName: monthNames[month - 1],
+          income: 0,
+          expense: 0,
+          net: 0,
+        }
+      }
+
+      if (r.type === 'income') {
+        monthlyData[key].income = r.total || 0
+      } else if (r.type === 'expense') {
+        monthlyData[key].expense = r.total || 0
+      }
+    })
+
+    Object.values(monthlyData).forEach(m => {
+      m.net = m.income - m.expense
+    })
+
+    return Object.values(monthlyData).sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year
+      return a.month - b.month
+    })
+  } catch (error) {
+    console.error('Error getting monthly line data:', error)
+    return []
+  }
+}
