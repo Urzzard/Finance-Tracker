@@ -1,0 +1,150 @@
+'use client'
+
+import { useState } from 'react'
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { updateAccount, deleteAccount } from '../../app/(dashboard)/actions'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useActionToast } from '../use-action-toast'
+
+interface Account {
+  id: number
+  name: string
+  currency: string
+  isCredit: boolean | null
+}
+
+export function AccountActions({ account }: { account: Account }){
+    const [showEditDialog, setShowEditDialog] = useState(false)
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+    const { handleActionResult } = useActionToast()
+
+    async function handleEdit(formData: FormData) {
+        const result = await updateAccount(account.id, formData)
+        if (result) {
+            handleActionResult(result, 'Cuenta actualizada exitosamente')
+            if (result.success) {
+                setShowEditDialog(false)
+            }
+        }
+    }
+
+    async function handleDelete() {
+        const result = await deleteAccount(account.id)
+        if (result) {
+            handleActionResult(result, 'Cuenta eliminada exitosamente')
+            if (result.success) {
+                setShowDeleteAlert(false)
+            }
+        }
+    }
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Editar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                        onClick={() => setShowDeleteAlert(true)}
+                        className="text-destructive focus:text-destructive"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                    <DialogHeader>
+                        <DialogTitle>Editar Cuenta</DialogTitle>
+                    </DialogHeader>
+                    <form action={handleEdit} className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label>Nombre</Label>
+                            <Input name="name" defaultValue={account.name} required />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="currency">Moneda</Label>
+                            <Select name="currency" defaultValue={account.currency}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona moneda" />
+                                    </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="PEN">Soles (PEN)</SelectItem>
+                                    <SelectItem value="USD">Dólares (USD)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id="isCredit" name="isCredit" defaultChecked={account.isCredit || false} />
+                            <Label htmlFor="isCredit" className="text-sm font-normal">
+                                ¿Es tarjeta de crédito?
+                            </Label>
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="submit">Guardar Cambios</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás completamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Se eliminará la cuenta 
+                            <strong> {account.name}</strong> y todos los registros asociados.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handleDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                            Sí, eliminar cuenta
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+    )
+}

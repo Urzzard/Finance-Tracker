@@ -1,6 +1,6 @@
 # Finance Tracker - Roadmap
 
-> **Last Updated:** 2026-03-11
+> **Last Updated:** 2026-03-20 (accounts, transactions, history completados)
 > **Language:** Spanish (UI/Comments), English (for agents)
 
 ---
@@ -11,130 +11,130 @@
 
 1. **Account Groups** - Grupos de cuentas
 2. **Monthly Closing** - Cierres mensuales manuales
-3. **Correcciones de Errores** (2026-03-11):
-   - Suspense boundary para useSearchParams
-   - Fix setState en useEffect (useSyncExternalStore)
-   - Fix Date.now() impuro (useRef)
-   - Limpieza de variables sin usar
-   - Build exitoso
+3. **Sidebar Navigation** - Navegación lateral
+4. **Dashboard Charts** - Gráficos en dashboard
+5. **/accounts** - Página completa de cuentas
+
+---
+
+## Estrategia de Implementación de Rutas
+
+> **Nota:** Cada ruta se implementa en orden, moviendo/copiando componentes existentes del dashboard. El dashboard permanece igual hasta validar cada ruta completa.
+
+**Flujo:**
+1. Crear página `/ruta` con componentes copiados
+2. Validar funcionalidad en navegador
+3. Luego simplificar dashboard con links a rutas completas
+
+---
+
+## Rutas Pendientes
+
+| # | Ruta | Plan | Estado |
+|---|------|------|--------|
+| 1 | `/accounts` | `2026-03-20-accounts-page-plan.md` | ✅ Completado |
+| 2 | `/transactions` | `2026-03-20-transactions-page-plan.md` | ✅ Completado |
+| 3 | `/history` | `2026-03-20-history-page-plan.md` | ✅ Completado |
+| 4 | `/charts` | `2026-03-20-charts-page-plan.md` | Pendiente |
+| 5 | `/profile` | `2026-03-20-profile-page-plan.md` | Pendiente |
 
 ---
 
 ## Pending Features
 
-### 🔴 High Priority - Fase 1: Navigation & Dashboard
+### 🔴 High Priority
 
-#### 1. Sidebar Navigation
+#### 1. Dashboard Reorganizado (pendiente)
 
-**Status:** Planificado (docs/plans/2026-03-11-sidebar-plan.md)
+**Status:** Esperando validación de rutas
 
-**Descripción:**
-- Sidebar izquierdo con comportamiento visible/oculto (overlay)
-- No afecta dimensiones del contenido principal
-- Breakpoints:
-  - Mobile (<768px): Overlay, oculto por defecto
-  - Tablet (768-1024px): Overlay, visible por defecto
-  - Desktop (>1024px): Fijo, visible por defecto
+**Plan:** Crear versión simplificada del dashboard con links a rutas completas
 
-**Rutas del menú:**
-| Ruta | Label | Icono |
-|------|-------|-------|
-| / | Inicio | Home |
-| /accounts | Cuentas | CreditCard |
-| /transactions | Transacciones | ArrowLeftRight |
-| /charts | Gráficos | BarChart3 |
-| /history | Historial | CalendarDays |
-| /profile | Perfil | User |
-
-**Componentes:**
-- `Sidebar` - Contenedor principal
-- `SidebarItem` - Items de navegación
-- `SidebarToggle` - Botón abrir/cerrar
-- `SidebarProvider` - Estado global con localStorage
-
----
-
-#### 2. Dashboard Reorganizado
-
-**Status:** Pendiente de planificar
-
-**Estructura nueva del Dashboard (/):**
-
-| Sección | Contenido |
-|---------|-----------|
-| **Resumen** | Balance general (igual que ahora) |
-| **Gráficos** | Bar (gastos por categoría) + Line (evolución mensual) |
-| **Transacciones** | Lista de últimas 25 transacciones + link a página completa |
-| **Cuentas** | Card simple: total, # cuentas + link a /accounts |
-| **Historial** | Card simple: último cierre + link a /history |
+**Estructura futura:**
+- Balance General
+- Gráficos (simplificados)
+- Cards con links a rutas:
+  - Cuentas → `/accounts`
+  - Transacciones → `/transactions`
+  - Historial → `/history`
+  - Gráficos → `/charts`
 
 ---
 
 ### 🟡 Medium Priority
 
-#### 3. Charts (Página completa)
+#### Cuentas (/accounts)
 
-**Status:** Planificado parcialmente (docs/plans/2026-03-10-charts-plan.md)
+**Status:** Planificado
 
-**Descripción:**
-- Gráficos completos en página separada (/charts)
-- Tipos: Pie, Bar, Line
-- Filtros: Período, Cuentas
-- Comparaciones mensuales
-
-**Dashboard Charts (simplificado):**
-- Bar: Gastos por categoría del período
-- Line: Evolución mensual (ingresos vs gastos vs neto)
-
----
-
-#### 4. Cuentas (/accounts)
-
-**Status:** Pendiente
+**Plan:** `docs/plans/2026-03-20-accounts-page-plan.md`
 
 **Descripción:**
-- Página completa de gestión de cuentas
-- CRUD completo de cuentas
-- Gestión de grupos
+- Mover `AccountGroupsManager` a `/accounts`
+- CRUD completo de cuentas y grupos
 - Balances por cuenta
+- Drag & drop para reordenar
 
 ---
 
-#### 5. Transacciones (/transactions)
+#### Transacciones (/transactions)
 
-**Status:** Pendiente
+**Status:** Planificado
+
+**Plan:** `docs/plans/2026-03-20-transactions-page-plan.md`
 
 **Descripción:**
-- Página completa de transacciones
-- Filtros avanzados (fecha, categoría, cuenta, tipo)
+- Mover `TransactionList` a `/transactions`
+- Filtros: fecha, tipo, cuenta, categoría
+- Búsqueda por descripción
 - Paginación
-- Exportación
 
 ---
 
-#### 6. Historial (/history)
+#### Historial (/history)
 
-**Status:** Pendiente
+**Status:** Planificado
+
+**Plan:** `docs/plans/2026-03-20-history-page-plan.md`
 
 **Descripción:**
-- Página completa de cierres mensuales
-- Comparaciones mes a mes
+- Mover `MonthlyHistory` a `/history`
+- Vista de cierres mensuales
 - Detalle de cada mes
 
 ---
 
-#### 7. Perfil (/profile)
+#### Charts (/charts)
 
-**Status:** Pendiente
+**Status:** Planificado
+
+**Plan:** `docs/plans/2026-03-20-charts-page-plan.md`
 
 **Descripción:**
-- Gestión de perfil de usuario
-- Configuraciones de la app
-- Preferencias
+- Gráficos completos: Pie, Bar, Line
+- Filtros: período, cuentas
+- Versión avanzada vs dashboard (simple)
+
+**Dashboard Charts (mantiene):**
+- Bar: Gastos por categoría
+- Line: Evolución mensual
 
 ---
 
-#### 8. Monthly Budgets by Category
+#### Perfil (/profile)
+
+**Status:** Planificado
+
+**Plan:** `docs/plans/2026-03-20-profile-page-plan.md`
+
+**Descripción:**
+- Información del usuario
+- Configuraciones de la app
+- Preferencias de UI
+
+---
+
+#### Monthly Budgets by Category
 
 **Status:** Pendiente
 
@@ -144,7 +144,7 @@
 
 ---
 
-#### 9. Savings Goals
+#### Savings Goals
 
 **Status:** Pendiente
 
@@ -154,7 +154,7 @@
 
 ---
 
-#### 10. Recurring Transactions
+#### Recurring Transactions
 
 **Status:** Pendiente
 
@@ -166,7 +166,7 @@
 
 ### 🟢 Low Priority
 
-#### 11. Data Export (CSV/PDF)
+#### Data Export (CSV/PDF)
 
 **Status:** Pendiente
 
@@ -176,7 +176,7 @@
 
 ---
 
-#### 12. Excessive Spending Alerts
+#### Excessive Spending Alerts
 
 **Status:** Pendiente
 
@@ -189,9 +189,9 @@
 ## Estructura de Rutas
 
 ```
-/                    → Dashboard (resumen + gráficos + transacciones + cuentas + historial)
-/login               → Login/Registro
-/accounts            → Gestión de cuentas
+/                    → Dashboard (actual, luego simplificado)
+/login               → Login/Registro (✅ existe)
+/accounts            → Gestión de cuentas (🔄 en progreso)
 /transactions        → Lista de transacciones
 /charts              → Gráficos completos
 /history             → Historial de cierres
@@ -212,13 +212,16 @@
 
 ## Plan Files
 
-| Archivo | Descripción |
-|---------|-------------|
-| docs/plans/2026-03-11-sidebar-design.md | Diseño del Sidebar |
-| docs/plans/2026-03-11-sidebar-plan.md | Implementación del Sidebar |
-| docs/plans/2026-03-10-charts-plan.md | Implementación de Gráficos |
-| docs/plans/2026-03-10-charts-design.md | Diseño de Gráficos |
-| docs/plans/2026-02-26-account-groups-plan.md | Grupos de Cuentas (completado) |
+| Archivo | Descripción | Estado |
+|---------|-------------|--------|
+| docs/plans/2026-03-11-sidebar-design.md | Diseño del Sidebar | ✅ |
+| docs/plans/2026-03-11-sidebar-plan.md | Implementación del Sidebar | ✅ |
+| docs/plans/2026-03-20-accounts-page-plan.md | Página /accounts | 🔄 |
+| docs/plans/2026-03-20-transactions-page-plan.md | Página /transactions | 🔄 |
+| docs/plans/2026-03-20-history-page-plan.md | Página /history | 🔄 |
+| docs/plans/2026-03-20-charts-page-plan.md | Página /charts | 🔄 |
+| docs/plans/2026-03-20-profile-page-plan.md | Página /profile | 🔄 |
+| docs/plans/2026-02-26-account-groups-plan.md | Grupos de Cuentas | ✅ |
 
 ---
 
